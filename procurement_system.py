@@ -123,66 +123,326 @@ def add_log(data, order_id, action, prev, new, by, details):
 # ─── CSS ──────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* Hide default streamlit elements */
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap');
+
+    /* ── Global ── */
+    html, body, [class*="css"] {
+        font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif !important;
+        background: #f0f4f8 !important;
+        color: #0f172a !important;
+    }
     #MainMenu {visibility:hidden;}
-    footer {visibility:hidden;}
-    header {visibility:hidden;}
-    .block-container {padding-top:1.5rem; padding-bottom:1rem;}
+    footer     {visibility:hidden;}
+    header     {visibility:hidden;}
+    .block-container {
+        padding-top: 1.8rem !important;
+        padding-bottom: 1rem !important;
+        max-width: 1200px;
+    }
 
-    /* Metric cards */
+    /* ── Sidebar ── */
+    [data-testid="stSidebar"] {
+        background: #0c1426 !important;
+        border-right: none !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #94a3b8 !important;
+        font-family: 'IBM Plex Sans', sans-serif !important;
+    }
+    [data-testid="stSidebar"] h1 { color: #f97316 !important; font-size: 1.2rem !important; font-weight: 800 !important; }
+    [data-testid="stSidebar"] h2 { color: #475569 !important; font-size: 0.65rem !important; letter-spacing: 1px !important; font-weight: 600 !important; }
+    [data-testid="stSidebar"] hr { border-color: #1e293b !important; }
+    [data-testid="stSidebar"] .stButton > button {
+        background: transparent !important;
+        border: none !important;
+        border-left: 3px solid transparent !important;
+        border-radius: 0 !important;
+        color: #94a3b8 !important;
+        font-weight: 400 !important;
+        text-align: left !important;
+        padding: 10px 16px !important;
+        width: 100% !important;
+        transition: all 0.12s !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: rgba(255,255,255,0.05) !important;
+        color: #fff !important;
+        border-left-color: #60a5fa !important;
+    }
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] {
+        background: #1d4ed8 !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-left: 3px solid #60a5fa !important;
+        border-radius: 6px !important;
+    }
+
+    /* ── Main area ── */
+    .main .block-container {
+        background: #f0f4f8 !important;
+    }
+
+    /* ── Metric cards ── */
     [data-testid="metric-container"] {
-        background:#fff;
-        border:1px solid #e2e8f0;
-        border-radius:10px;
-        padding:12px 16px;
-        box-shadow:0 1px 3px rgba(0,0,0,0.06);
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        padding: 14px 16px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.07) !important;
+    }
+    [data-testid="metric-container"] label {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.6px !important;
+        color: #64748b !important;
+    }
+    [data-testid="metric-container"] [data-testid="stMetricValue"] {
+        font-size: 22px !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
     }
 
-    /* Buttons */
-    .stButton>button {
-        border-radius:7px;
-        font-weight:600;
-        transition:all 0.15s;
+    /* ── Cards / containers ── */
+    .sc-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 18px 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        margin-bottom: 16px;
     }
-    .stButton>button:hover {opacity:0.88;}
+    .sc-card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 14px;
+    }
 
-    /* Table */
-    .stDataFrame {border-radius:8px; overflow:hidden;}
+    /* ── Buttons ── */
+    .stButton > button {
+        border-radius: 7px !important;
+        font-weight: 600 !important;
+        font-family: 'IBM Plex Sans', sans-serif !important;
+        transition: all 0.15s !important;
+    }
+    .stButton > button[kind="primary"] {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+        color: #fff !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background: #1e40af !important;
+    }
+    .stButton > button[kind="secondary"] {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #374151 !important;
+    }
+    .stButton > button[kind="secondary"]:hover {
+        border-color: #1d4ed8 !important;
+        color: #1d4ed8 !important;
+    }
 
-    /* Sidebar */
-    [data-testid="stSidebar"] {background:#0c1426;}
-    [data-testid="stSidebar"] * {color:#94a3b8 !important;}
-    [data-testid="stSidebar"] h1,
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3 {color:#f97316 !important;}
+    /* ── Inputs ── */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div,
+    .stNumberInput > div > div > input,
+    .stDateInput > div > div > input {
+        border-radius: 7px !important;
+        border: 1px solid #d1d5db !important;
+        font-family: 'IBM Plex Sans', sans-serif !important;
+        font-size: 13px !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: #1d4ed8 !important;
+        box-shadow: 0 0 0 2px rgba(29,78,216,0.12) !important;
+    }
 
-    /* Status badges */
+    /* ── Labels ── */
+    .stTextInput label, .stTextArea label, .stSelectbox label,
+    .stNumberInput label, .stDateInput label, .stFileUploader label {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
+    }
+
+    /* ── Tabs ── */
+    .stTabs [data-baseweb="tab-list"] {
+        background: transparent !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        gap: 0 !important;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+        color: #64748b !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+        padding: 8px 18px !important;
+        margin-bottom: -2px !important;
+    }
+    .stTabs [aria-selected="true"] {
+        border-bottom: 2px solid #1d4ed8 !important;
+        color: #1d4ed8 !important;
+        font-weight: 700 !important;
+        background: transparent !important;
+    }
+
+    /* ── DataFrames ── */
+    .stDataFrame {
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+    }
+    .stDataFrame table { font-family: 'IBM Plex Sans', sans-serif !important; }
+    .stDataFrame thead th {
+        background: #f8fafc !important;
+        font-size: 10.5px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #475569 !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        padding: 9px 12px !important;
+    }
+    .stDataFrame tbody td {
+        font-size: 12.5px !important;
+        padding: 10px 12px !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        color: #1e293b !important;
+    }
+
+    /* ── Forms ── */
+    .stForm {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        padding: 18px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+    }
+
+    /* ── Alerts ── */
+    .stSuccess { border-radius: 8px !important; }
+    .stError   { border-radius: 8px !important; }
+    .stInfo    { border-radius: 8px !important; }
+    .stWarning { border-radius: 8px !important; }
+
+    /* ── Progress bar ── */
+    .stProgress > div > div {
+        background: #1d4ed8 !important;
+        border-radius: 3px !important;
+    }
+    .stProgress > div {
+        background: #f1f5f9 !important;
+        border-radius: 3px !important;
+        height: 6px !important;
+    }
+
+    /* ── Badges ── */
     .badge {
-        display:inline-block;
-        padding:2px 10px;
-        border-radius:999px;
-        font-size:12px;
-        font-weight:600;
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .badge-pending    { background:#fef3c7; color:#d97706; }
+    .badge-procured   { background:#dbeafe; color:#2563eb; }
+    .badge-dispatched { background:#ede9fe; color:#7c3aed; }
+    .badge-delivered  { background:#d1fae5; color:#059669; }
+    .badge-invoiced   { background:#cffafe; color:#0891b2; }
+    .badge-paid       { background:#dcfce7; color:#16a34a; }
+    .badge-high       { background:#fef3c7; color:#d97706; }
+    .badge-urgent     { background:#fee2e2; color:#dc2626; }
+    .badge-medium     { background:#dbeafe; color:#2563eb; }
+    .badge-low        { background:#f1f5f9; color:#64748b; }
+    .badge-rk         { background:#ede9fe; color:#7c3aed; }
+    .badge-bt         { background:#cffafe; color:#0891b2; }
+    .badge-el         { background:#ffedd5; color:#c2410c; }
+
+    /* ── Page title ── */
+    .page-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+    .page-sub {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 18px;
     }
 
-    /* Info boxes */
-    .info-box {
-        background:#f8fafc;
-        border:1px solid #e2e8f0;
-        border-radius:8px;
-        padding:12px 16px;
-        margin-bottom:12px;
+    /* ── Topbar ── */
+    .topbar {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 10px 0 14px 0;
+        margin-bottom: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .saved-dot {
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+    .saved-label { font-size: 11px; color: #16a34a; font-weight: 600; }
+
+    /* ── Login ── */
+    .login-box {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 40px 44px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        border: 1px solid #e2e8f0;
+        margin-top: 60px;
     }
 
-    /* Footer */
+    /* ── Step progress ── */
+    .step-done {
+        background: #1d4ed8;
+        color: #fff;
+        border-radius: 8px;
+        text-align: center;
+        padding: 8px 4px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+    .step-pending {
+        background: #f1f5f9;
+        color: #94a3b8;
+        border-radius: 8px;
+        text-align: center;
+        padding: 8px 4px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    /* ── Footer ── */
     .footer {
-        text-align:center;
-        font-size:11px;
-        color:#94a3b8;
-        padding:8px;
-        border-top:1px solid #e2e8f0;
-        margin-top:2rem;
+        text-align: center;
+        font-size: 11px;
+        color: #94a3b8;
+        padding: 10px 0 4px 0;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 2rem;
     }
+
+    /* ── Divider ── */
+    hr { border-color: #e2e8f0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -197,14 +457,34 @@ data = st.session_state.data
 
 # ─── LOGIN PAGE ───────────────────────────────────────────────────────────────
 def login_page():
-    col1, col2, col3 = st.columns([1, 1.2, 1])
+    # full-page gradient background
+    st.markdown("""
+    <style>
+    .stApp { background: linear-gradient(135deg,#0c1426 0%,#1e3a5f 100%) !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 1.1, 1])
     with col2:
         st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("## 🏭 Supply Chain Tracking System")
-        st.markdown("---")
+        st.markdown("""
+        <div style="background:#fff;border-radius:14px;padding:40px 36px 32px 36px;
+                    box-shadow:0 24px 80px rgba(0,0,0,0.4);border:1px solid #e2e8f0;">
+            <div style="text-align:center;margin-bottom:28px;">
+                <div style="font-size:40px;margin-bottom:8px;">🏭</div>
+                <div style="font-size:22px;font-weight:800;color:#0f172a;">
+                    Supply Chain Tracking System
+                </div>
+                <div style="font-size:12px;color:#64748b;margin-top:6px;">
+                    Sign in to continue
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         with st.form("login_form"):
-            username = st.text_input("Username", placeholder="Enter your username")
-            password = st.text_input("Password", type="password", placeholder="Enter your password")
+            username  = st.text_input("Username", placeholder="Enter your username")
+            password  = st.text_input("Password", type="password", placeholder="Enter your password")
             submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
             if submitted:
                 if username in USERS and USERS[username]["password"] == password:
@@ -215,7 +495,11 @@ def login_page():
                     st.rerun()
                 else:
                     st.error("⚠ Invalid username or password.")
-        st.caption("Contact your administrator for login credentials.")
+        st.markdown(
+            "<p style='text-align:center;font-size:11px;color:#94a3b8;margin-top:8px;'>"
+            "Contact your administrator for login credentials.</p>",
+            unsafe_allow_html=True
+        )
 
 # ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 def sidebar():
@@ -285,71 +569,181 @@ def get_order(order_id):
     rows = data["orders"][data["orders"]["order_id"] == order_id]
     return rows.iloc[0] if len(rows) > 0 else None
 
-def df_to_csv_bytes(df):
-    return df.to_csv(index=False).encode("utf-8")
+def page_title(icon, title, subtitle=""):
+    st.markdown(f"""
+    <div style="padding:0 0 14px 0;border-bottom:1px solid #e2e8f0;margin-bottom:20px;">
+        <div style="font-size:20px;font-weight:800;color:#0f172a;">{icon} {title}</div>
+        {"<div style='font-size:12px;color:#64748b;margin-top:3px;'>"+subtitle+"</div>" if subtitle else ""}
+    </div>
+    """, unsafe_allow_html=True)
 
 # ─── PAGES ────────────────────────────────────────────────────────────────────
 
 # ── DASHBOARD ─────────────────────────────────────────────────────────────────
 def page_dashboard():
-    st.markdown("## 📊 Dashboard")
-
     orders = data["orders"].copy()
+    cf     = st.session_state.get("cf", "All")
 
-    # Company filter
-    st.markdown("**Filter by Company:**")
-    col_all, col_rk, col_bt, col_el, _ = st.columns([1,1,1,1,3])
-    with col_all:
-        if st.button("🏢 All", use_container_width=True,
-                     type="primary" if st.session_state.get("cf","All")=="All" else "secondary"):
-            st.session_state.cf = "All"; st.rerun()
-    with col_rk:
-        if st.button("Robokart", use_container_width=True,
-                     type="primary" if st.session_state.get("cf")=="Robokart" else "secondary"):
-            st.session_state.cf = "Robokart"; st.rerun()
-    with col_bt:
-        if st.button("Bharat Tech", use_container_width=True,
-                     type="primary" if st.session_state.get("cf")=="Bharat Tech" else "secondary"):
-            st.session_state.cf = "Bharat Tech"; st.rerun()
-    with col_el:
-        if st.button("EL", use_container_width=True,
-                     type="primary" if st.session_state.get("cf")=="EL" else "secondary"):
-            st.session_state.cf = "EL"; st.rerun()
+    # ── Topbar ──
+    today = datetime.now().strftime("%d %b %Y")
+    st.markdown(f"""
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                padding:0 0 14px 0;border-bottom:1px solid #e2e8f0;margin-bottom:18px;">
+        <div style="font-size:20px;font-weight:800;color:#0f172a;">📊 Dashboard</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#16a34a;font-weight:600;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+                Auto-saved
+            </span>
+            <span style="font-size:11px;color:#64748b;">{today}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    cf = st.session_state.get("cf", "All")
-    filtered = orders if cf == "All" else orders[orders["company"] == cf]
+    # ── Metric cards ──
+    filtered  = orders if cf == "All" else orders[orders["company"] == cf]
+    total_val = filtered["total_value"].astype(float).sum() if len(filtered) else 0
 
-    st.markdown("---")
+    metrics = [
+        ("TOTAL ORDERS",  str(len(filtered)),                                                          "#1d4ed8"),
+        ("PENDING",       str(len(filtered[filtered["current_status"]=="Pending"])),                   "#d97706"),
+        ("IN TRANSIT",    str(len(filtered[filtered["current_status"].isin(["Procured","Dispatched"])])), "#7c3aed"),
+        ("DELIVERED",     str(len(filtered[filtered["current_status"].isin(["Delivered","Invoiced","Paid"])])), "#059669"),
+        ("PAID",          str(len(filtered[filtered["current_status"]=="Paid"])),                      "#16a34a"),
+        ("TOTAL VALUE",   f"₹{total_val/100000:.1f}L",                                                "#f97316"),
+    ]
+    cols = st.columns(6)
+    for col, (label, value, color) in zip(cols, metrics):
+        col.markdown(f"""
+        <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid {color};
+                    border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.6px;color:#64748b;">{label}</div>
+            <div style="font-size:24px;font-weight:800;margin-top:6px;color:{color};">{value}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Metric cards
-    total_val = filtered["total_value"].astype(float).sum()
-    c1,c2,c3,c4,c5,c6 = st.columns(6)
-    c1.metric("📦 Total Orders",  len(filtered))
-    c2.metric("⏳ Pending",       len(filtered[filtered["current_status"]=="Pending"]))
-    c3.metric("🚚 In Transit",    len(filtered[filtered["current_status"].isin(["Procured","Dispatched"])]))
-    c4.metric("📦 Delivered",     len(filtered[filtered["current_status"].isin(["Delivered","Invoiced","Paid"])]))
-    c5.metric("💰 Paid",          len(filtered[filtered["current_status"]=="Paid"]))
-    c6.metric("💵 Total Value",   f"₹{total_val/100000:.1f}L")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown("---")
-    st.markdown(f"### All Orders {'' if cf=='All' else f'— {cf}'} ({len(filtered)})")
+    # ── Company filter pills ──
+    cf_buttons = st.columns([1,1,1,1,4])
+    labels = [("🏢 All Companies","All"), ("Robokart","Robokart"), ("Bharat Tech","Bharat Tech"), ("EL","EL")]
+    pill_colors = {
+        "All":         ("background:#dbeafe;color:#1d4ed8;border:1.5px solid #1d4ed8;",
+                        "background:#fff;color:#374151;border:1px solid #e2e8f0;"),
+        "Robokart":    ("background:#ede9fe;color:#7c3aed;border:1.5px solid #7c3aed;",
+                        "background:#fff;color:#374151;border:1px solid #e2e8f0;"),
+        "Bharat Tech": ("background:#cffafe;color:#0891b2;border:1.5px solid #0891b2;",
+                        "background:#fff;color:#374151;border:1px solid #e2e8f0;"),
+        "EL":          ("background:#ffedd5;color:#c2410c;border:1.5px solid #c2410c;",
+                        "background:#fff;color:#374151;border:1px solid #e2e8f0;"),
+    }
+    for col, (label, val) in zip(cf_buttons, labels):
+        active_style, inactive_style = pill_colors[val]
+        style = active_style if cf == val else inactive_style
+        with col:
+            if st.button(
+                f"{label} {'✓' if cf==val else ''}",
+                key=f"cf_{val}",
+                use_container_width=True,
+                type="primary" if cf == val else "secondary"
+            ):
+                st.session_state.cf = val
+                st.rerun()
 
-    if len(filtered) == 0:
-        st.info("No orders found for selected company.")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── Orders table ──
+    count = len(filtered)
+    title = "All Orders" if cf == "All" else f"{cf} Orders"
+
+    st.markdown(f"""
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;
+                box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;">
+        <div style="padding:12px 18px;border-bottom:1px solid #f1f5f9;
+                    display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:14px;font-weight:700;color:#0f172a;">📦 {title}</span>
+            <span style="font-size:11px;color:#64748b;background:#f1f5f9;
+                         padding:3px 12px;border-radius:99px;font-weight:600;">{count} orders</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    if count == 0:
+        st.markdown("<div style='padding:20px;text-align:center;color:#94a3b8;'>No orders found.</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # Display table
-    display = filtered[["order_id","company","po_number","govt_department","item_description",
-                         "quantity","total_value","priority","current_status","last_updated"]].copy()
-    display.columns = ["Order ID","Company","PO Number","Department","Description",
-                       "Qty","Value (₹)","Priority","Status","Last Updated"]
-    display["Value (₹)"] = display["Value (₹)"].astype(float).apply(lambda x: f"₹{x:,.0f}")
+    # Build HTML table
+    STATUS_BG  = {"Pending":"#fef3c7","Procured":"#dbeafe","Dispatched":"#ede9fe",
+                  "Delivered":"#d1fae5","Invoiced":"#cffafe","Paid":"#dcfce7"}
+    STATUS_COL = {"Pending":"#d97706","Procured":"#2563eb","Dispatched":"#7c3aed",
+                  "Delivered":"#059669","Invoiced":"#0891b2","Paid":"#16a34a"}
+    PRIO_BG    = {"Low":"#f1f5f9","Medium":"#dbeafe","High":"#fef3c7","Urgent":"#fee2e2"}
+    PRIO_COL   = {"Low":"#64748b","Medium":"#2563eb","High":"#d97706","Urgent":"#dc2626"}
+    CO_BG      = {"Robokart":"#ede9fe","Bharat Tech":"#cffafe","EL":"#ffedd5"}
+    CO_COL     = {"Robokart":"#7c3aed","Bharat Tech":"#0891b2","EL":"#c2410c"}
 
-    st.dataframe(display, use_container_width=True, hide_index=True)
+    th = "padding:9px 14px;background:#f8fafc;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;border-bottom:2px solid #e2e8f0;white-space:nowrap;"
+    td = "padding:11px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px;color:#1e293b;vertical-align:middle;"
+
+    rows_html = ""
+    for i, (_, row) in enumerate(filtered.iterrows()):
+        bg    = "#fff" if i % 2 == 0 else "#fafbfc"
+        s     = row["current_status"]
+        p     = row["priority"]
+        co    = row["company"]
+        val   = f"₹{float(row['total_value']):,.0f}"
+        sbg   = STATUS_BG.get(s,"#f1f5f9");  scol = STATUS_COL.get(s,"#64748b")
+        pbg   = PRIO_BG.get(p,"#f1f5f9");    pcol = PRIO_COL.get(p,"#64748b")
+        cobg  = CO_BG.get(co,"#f1f5f9");     cocol= CO_COL.get(co,"#64748b")
+        sbadge = f'<span style="background:{sbg};color:{scol};padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap;">{STATUS_EMOJI.get(s,"")} {s}</span>'
+        pbadge = f'<span style="background:{pbg};color:{pcol};padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;">{p}</span>'
+        cobadge= f'<span style="background:{cobg};color:{cocol};padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;">{co}</span>'
+        rows_html += f"""
+        <tr style="background:{bg};">
+            <td style="{td}font-weight:700;color:#1d4ed8;font-size:11.5px;">{row["order_id"]}</td>
+            <td style="{td}">{cobadge}</td>
+            <td style="{td}color:#64748b;font-size:11.5px;">{row["po_number"]}</td>
+            <td style="{td}">{row["govt_department"]}</td>
+            <td style="{td}max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{row["item_description"]}</td>
+            <td style="{td}text-align:center;">{row["quantity"]}</td>
+            <td style="{td}font-weight:700;">{val}</td>
+            <td style="{td}">{pbadge}</td>
+            <td style="{td}">{sbadge}</td>
+            <td style="{td}font-size:11px;color:#94a3b8;">{row["last_updated"]}</td>
+        </tr>"""
+
+    st.markdown(f"""
+        <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="{th}">Order ID</th>
+                    <th style="{th}">Company</th>
+                    <th style="{th}">PO Number</th>
+                    <th style="{th}">Department</th>
+                    <th style="{th}">Description</th>
+                    <th style="{th}">Qty</th>
+                    <th style="{th}">Value</th>
+                    <th style="{th}">Priority</th>
+                    <th style="{th}">Status</th>
+                    <th style="{th}">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>{rows_html}</tbody>
+        </table>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def df_to_csv_bytes(df):
+    return df.to_csv(index=False).encode("utf-8")
+
+# ─── PAGES ────────────────────────────────────────────────────────────────────
 
 # ── NEW ORDER ─────────────────────────────────────────────────────────────────
 def page_new_order():
-    st.markdown("## ➕ Create New Purchase Order")
+    page_title("➕", "Create New Purchase Order")
 
     with st.form("new_order_form", clear_on_submit=True):
         st.markdown("#### Select Company *")
@@ -403,7 +797,7 @@ def page_new_order():
 
 # ── UPDATE ORDER ──────────────────────────────────────────────────────────────
 def page_update_order():
-    st.markdown("## 🔄 Update Order")
+    page_title("🔄","Update Order","Select an order and update its procurement, dispatch, delivery or invoice status")
 
     order_options = ["— Select an order —"] + [
         f"{row['order_id']} · {row['po_number']} · [{row['current_status']}]"
@@ -583,7 +977,7 @@ def page_update_order():
 
 # ── ORDER DETAILS ─────────────────────────────────────────────────────────────
 def page_order_details():
-    st.markdown("## 🔍 Order Details")
+    page_title("🔍","Order Details","View full information and activity log for any order")
 
     order_options = ["— Select an order —"] + [
         f"{row['order_id']} · {row['po_number']} · {row['current_status']}"
@@ -679,14 +1073,14 @@ def page_order_details():
 
 # ── ACTIVITY LOG ──────────────────────────────────────────────────────────────
 def page_activity_log():
-    st.markdown("## 📋 Full Audit Trail")
+    page_title("📋","Activity Log","Complete audit trail of all order changes")
     logs = data["activity_log"].copy().iloc[::-1].reset_index(drop=True)
     st.markdown(f"**{len(logs)} total events**")
     st.dataframe(logs, use_container_width=True, hide_index=True)
 
 # ── REPORTS ───────────────────────────────────────────────────────────────────
 def page_reports():
-    st.markdown("## 📈 Reports")
+    page_title("📈","Reports","Financial summaries and order analytics")
     orders = data["orders"].copy()
     orders["total_value"] = orders["total_value"].astype(float)
 
@@ -726,7 +1120,7 @@ def page_reports():
 
 # ── ADMIN ─────────────────────────────────────────────────────────────────────
 def page_admin():
-    st.markdown("## ⚙️ Admin Panel")
+    page_title("⚙️","Admin Panel","Manage data exports, users, and system settings")
 
     st.info("✅ **Auto-Save** — All data saves to CSV files automatically on the server.\n\n"
             "📥 **Export CSV** — Download any table directly to your computer.\n\n"
@@ -771,10 +1165,12 @@ def page_admin():
 
 # ─── FOOTER ───────────────────────────────────────────────────────────────────
 def show_footer():
-    st.markdown(
-        f'<div class="footer">© {datetime.now().year} Robokart. All rights reserved. Supply Chain Tracking System.</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown(f"""
+    <div style="text-align:center;font-size:11px;color:#94a3b8;
+                padding:10px 0 4px 0;border-top:1px solid #e2e8f0;margin-top:2rem;">
+        © {datetime.now().year} Robokart. All rights reserved. Supply Chain Tracking System.
+    </div>
+    """, unsafe_allow_html=True)
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 def main():
