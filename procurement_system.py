@@ -499,15 +499,68 @@ def show_footer():
 def login_page():
     st.markdown("""
     <style>
-    .stApp { background: linear-gradient(135deg,#0c1426 0%,#1a3a6b 60%,#0c1426 100%) !important; }
+    .stApp { 
+        background: linear-gradient(135deg,#0c1426 0%,#1a3a6b 60%,#0c1426 100%) !important; 
+    }
+
+    /* Hide sidebar on login */
     [data-testid="stSidebar"] { display: none !important; }
     section[data-testid="stSidebar"] + div .block-container { padding: 0 !important; }
-    </style>""", unsafe_allow_html=True)
+
+    /* 🔹 FIX: Make input text clearly visible */
+    .stTextInput input {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        opacity: 1 !important;
+        border-radius: 8px !important;
+        border: 1px solid #d1d5db !important;
+        padding: 10px 12px !important;
+    }
+
+    /* Fix placeholder visibility */
+    .stTextInput input::placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+    }
+
+    /* 🔹 FIX: Password eye alignment */
+    .stTextInput button {
+        background: #1f2937 !important;
+        border: none !important;
+        border-radius: 0 8px 8px 0 !important;
+        height: 42px !important;
+    }
+
+    /* Prevent width overlap issue */
+    div[data-baseweb="input"] {
+        width: 100% !important;
+    }
+
+    .stTextInput {
+        width: 100% !important;
+    }
+
+    .stTextInput > div {
+        width: 100% !important;
+    }
+
+    /* Login button */
+    .stForm button[kind="primary"] {
+        background: #ff4b4b !important;
+        border: none !important;
+        color: white !important;
+        font-weight: 600 !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     _, mid, _ = st.columns([1, 1.0, 1])
     with mid:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
-        # Card header — HTML only
+
         st.markdown("""
         <div style="background:#ffffff;border-radius:14px 14px 0 0;padding:36px 40px 24px;
                     box-shadow:0 2px 0 #e2e8f0;text-align:center;">
@@ -518,21 +571,19 @@ def login_page():
             <div style="font-size:13px;color:#64748b;margin-top:8px;">
                 Sign in with your credentials to continue
             </div>
-        </div>""", unsafe_allow_html=True)
-
-        # Form body
-        st.markdown("""
-        <div style="background:#ffffff;border-radius:0 0 14px 14px;
-                    padding:0 40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
-        </div>""", unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
         with st.container():
             st.markdown('<div style="background:#fff;border-radius:0 0 14px 14px;padding:8px 40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.35);margin-top:-8px;">', unsafe_allow_html=True)
+
             with st.form("login_form", clear_on_submit=False):
                 username = st.text_input("Username", placeholder="Enter your username")
                 password = st.text_input("Password", type="password", placeholder="Enter your password")
+
                 st.markdown("<br>", unsafe_allow_html=True)
                 submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
+
                 if submitted:
                     if username in USERS and USERS[username]["password"] == password:
                         st.session_state.logged_in = True
@@ -543,12 +594,14 @@ def login_page():
                         st.rerun()
                     else:
                         st.error("⚠ Invalid username or password. Please try again.")
+
             st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown("""
         <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:16px;">
             Contact your administrator for login credentials.
-        </p>""", unsafe_allow_html=True)
+        </p>
+        """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SIDEBAR
