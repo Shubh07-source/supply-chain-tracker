@@ -3,9 +3,9 @@ import pandas as pd
 import os
 from datetime import datetime, timezone, timedelta
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# PAGE CONFIG  — must be first Streamlit call
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
+# PAGE CONFIG — must be FIRST streamlit call
+# ══════════════════════════════════════════════════════
 st.set_page_config(
     page_title="Supply Chain Tracking System",
     page_icon="🏭",
@@ -13,20 +13,20 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # CONSTANTS
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 COMPANIES  = ["Robokart", "Bharat Tech", "EL"]
-STATUSES   = ["Pending", "Procured", "Dispatched", "Delivered", "Invoiced", "Paid"]
-PRIORITIES = ["Low", "Medium", "High", "Urgent"]
+STATUSES   = ["Pending","Procured","Dispatched","Delivered","Invoiced","Paid"]
+PRIORITIES = ["Low","Medium","High","Urgent"]
 
 STATUS_EMOJI = {"Pending":"⏳","Procured":"🔧","Dispatched":"🚚","Delivered":"📦","Invoiced":"🧾","Paid":"💰"}
 STATUS_BG    = {"Pending":"#fef3c7","Procured":"#dbeafe","Dispatched":"#ede9fe","Delivered":"#d1fae5","Invoiced":"#cffafe","Paid":"#dcfce7"}
-STATUS_FG    = {"Pending":"#d97706","Procured":"#2563eb","Dispatched":"#7c3aed","Delivered":"#059669","Invoiced":"#0891b2","Paid":"#16a34a"}
+STATUS_FG    = {"Pending":"#b45309","Procured":"#1d4ed8","Dispatched":"#6d28d9","Delivered":"#065f46","Invoiced":"#0e7490","Paid":"#15803d"}
 PRIO_BG      = {"Low":"#f1f5f9","Medium":"#dbeafe","High":"#fef3c7","Urgent":"#fee2e2"}
-PRIO_FG      = {"Low":"#64748b","Medium":"#2563eb","High":"#d97706","Urgent":"#dc2626"}
+PRIO_FG      = {"Low":"#475569","Medium":"#1d4ed8","High":"#b45309","Urgent":"#dc2626"}
 CO_BG        = {"Robokart":"#ede9fe","Bharat Tech":"#cffafe","EL":"#ffedd5"}
-CO_FG        = {"Robokart":"#7c3aed","Bharat Tech":"#0891b2","EL":"#c2410c"}
+CO_FG        = {"Robokart":"#6d28d9","Bharat Tech":"#0e7490","EL":"#c2410c"}
 
 USERS = {
     "Admin":   {"password":"admin@123",    "role":"Admin",   "name":"System Admin"},
@@ -47,19 +47,40 @@ MENU_ICONS = {
 ROLE_COLOR = {"Admin":"#dc2626","Manager":"#d97706","Staff":"#2563eb","Viewer":"#059669"}
 ROLE_BG    = {"Admin":"#fee2e2","Manager":"#fef3c7","Staff":"#dbeafe","Viewer":"#dcfce7"}
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # DATA LAYER
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
-FILES = {k: f"{DATA_DIR}/{k}.csv" for k in ["orders","procurement","dispatch","delivery","invoices","activity_log"]}
+FILES = {k: f"{DATA_DIR}/{k}.csv" for k in
+         ["orders","procurement","dispatch","delivery","invoices","activity_log"]}
 
 SEED = {
     "orders": pd.DataFrame([
-        {"order_id":"ORD-2026-02-28-001","date_created":"2026-02-10 09:30:00","company":"Robokart","govt_department":"Education Department Delhi","contact_person":"Mr. Rajesh Kumar","contact_phone":"9876543210","po_number":"PO/EDU/2026/001","item_description":"Robotics Kits for STEM Labs","quantity":50,"total_value":250000,"assigned_company":"Tech Solutions Pvt Ltd","current_status":"Dispatched","priority":"High","expected_delivery_date":"2026-03-05","remarks":"","created_by":"Admin","last_updated":"2026-02-20 11:00:00"},
-        {"order_id":"ORD-2026-02-28-002","date_created":"2026-02-12 10:15:00","company":"Bharat Tech","govt_department":"Health Ministry Maharashtra","contact_person":"Dr. Priya Sharma","contact_phone":"9123456789","po_number":"PO/HLT/2026/044","item_description":"Medical IoT Devices & Sensors","quantity":200,"total_value":980000,"assigned_company":"BioTech India","current_status":"Pending","priority":"Urgent","expected_delivery_date":"2026-03-10","remarks":"","created_by":"Admin","last_updated":"2026-02-12 10:15:00"},
-        {"order_id":"ORD-2026-02-28-003","date_created":"2026-01-28 14:00:00","company":"EL","govt_department":"Defence Research DRDO","contact_person":"Col. Vikram Singh","contact_phone":"9000123456","po_number":"PO/DEF/2026/007","item_description":"Surveillance Drone Components","quantity":10,"total_value":1500000,"assigned_company":"AeroDyne Systems","current_status":"Paid","priority":"Medium","expected_delivery_date":"2026-02-20","remarks":"","created_by":"Admin","last_updated":"2026-02-25 16:30:00"},
-        {"order_id":"ORD-2026-02-28-004","date_created":"2026-02-18 08:45:00","company":"Robokart","govt_department":"Smart Cities Mission UP","contact_person":"Ms. Anita Verma","contact_phone":"9988776655","po_number":"PO/SCM/2026/019","item_description":"IoT Traffic Management System","quantity":30,"total_value":670000,"assigned_company":"Robokart Solutions","current_status":"Delivered","priority":"Medium","expected_delivery_date":"2026-02-28","remarks":"","created_by":"Admin","last_updated":"2026-02-26 17:00:00"},
+        {"order_id":"ORD-2026-02-28-001","date_created":"2026-02-10 09:30:00","company":"Robokart",
+         "govt_department":"Education Department Delhi","contact_person":"Mr. Rajesh Kumar",
+         "contact_phone":"9876543210","po_number":"PO/EDU/2026/001",
+         "item_description":"Robotics Kits for STEM Labs","quantity":50,"total_value":250000,
+         "assigned_company":"Tech Solutions Pvt Ltd","current_status":"Dispatched","priority":"High",
+         "expected_delivery_date":"2026-03-05","remarks":"","created_by":"Admin","last_updated":"2026-02-20 11:00:00"},
+        {"order_id":"ORD-2026-02-28-002","date_created":"2026-02-12 10:15:00","company":"Bharat Tech",
+         "govt_department":"Health Ministry Maharashtra","contact_person":"Dr. Priya Sharma",
+         "contact_phone":"9123456789","po_number":"PO/HLT/2026/044",
+         "item_description":"Medical IoT Devices & Sensors","quantity":200,"total_value":980000,
+         "assigned_company":"BioTech India","current_status":"Pending","priority":"Urgent",
+         "expected_delivery_date":"2026-03-10","remarks":"","created_by":"Admin","last_updated":"2026-02-12 10:15:00"},
+        {"order_id":"ORD-2026-02-28-003","date_created":"2026-01-28 14:00:00","company":"EL",
+         "govt_department":"Defence Research DRDO","contact_person":"Col. Vikram Singh",
+         "contact_phone":"9000123456","po_number":"PO/DEF/2026/007",
+         "item_description":"Surveillance Drone Components","quantity":10,"total_value":1500000,
+         "assigned_company":"AeroDyne Systems","current_status":"Paid","priority":"Medium",
+         "expected_delivery_date":"2026-02-20","remarks":"","created_by":"Admin","last_updated":"2026-02-25 16:30:00"},
+        {"order_id":"ORD-2026-02-28-004","date_created":"2026-02-18 08:45:00","company":"Robokart",
+         "govt_department":"Smart Cities Mission UP","contact_person":"Ms. Anita Verma",
+         "contact_phone":"9988776655","po_number":"PO/SCM/2026/019",
+         "item_description":"IoT Traffic Management System","quantity":30,"total_value":670000,
+         "assigned_company":"Robokart Solutions","current_status":"Delivered","priority":"Medium",
+         "expected_delivery_date":"2026-02-28","remarks":"","created_by":"Admin","last_updated":"2026-02-26 17:00:00"},
     ]),
     "procurement": pd.DataFrame([
         {"id":1,"order_id":"ORD-2026-02-28-001","procurement_status":"Completed","procurement_date":"2026-02-15","materials_source":"Vendor - RoboSupplies","quality_check_status":"Passed","notes":"All kits verified","updated_by":"Rahul","updated_at":"2026-02-15 14:00:00"},
@@ -106,29 +127,27 @@ def save_table(key):
     st.session_state.data[key].to_csv(FILES[key], index=False)
 
 def add_log(order_id, action, prev, new_s, by, details):
-    D   = st.session_state.data
-    ts  = now_ist()
+    D = st.session_state.data
     row = pd.DataFrame([{"id":str(len(D["activity_log"])+1),"order_id":order_id,
-                          "action_type":action,"previous_status":prev,"new_status":new_s,
-                          "performed_by":by,"performed_at":ts,"details":details}])
+                         "action_type":action,"previous_status":prev,"new_status":new_s,
+                         "performed_by":by,"performed_at":now_ist(),"details":details}])
     D["activity_log"] = pd.concat([D["activity_log"],row],ignore_index=True)
     save_table("activity_log")
 
 def update_order_status(order_id, new_status):
-    D  = st.session_state.data
-    ts = now_ist()
+    D = st.session_state.data
     D["orders"].loc[D["orders"]["order_id"]==order_id,"current_status"] = new_status
-    D["orders"].loc[D["orders"]["order_id"]==order_id,"last_updated"]   = ts
+    D["orders"].loc[D["orders"]["order_id"]==order_id,"last_updated"]   = now_ist()
     save_table("orders")
 
 def get_order(order_id):
     rows = st.session_state.data["orders"]
-    rows = rows[rows["order_id"]==order_id]
-    return rows.iloc[0] if len(rows) else None
+    r    = rows[rows["order_id"]==order_id]
+    return r.iloc[0] if len(r) else None
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SESSION STATE INIT
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
+# SESSION STATE
+# ══════════════════════════════════════════════════════
 for k,v in [("logged_in",False),("username",""),("role",""),("user_name",""),
             ("menu","Dashboard"),("company_filter","All")]:
     if k not in st.session_state:
@@ -136,244 +155,189 @@ for k,v in [("logged_in",False),("username",""),("role",""),("user_name",""),
 if "data" not in st.session_state:
     st.session_state.data = load_data()
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# GLOBAL CSS — Light, clean, IBM Plex Sans, white background
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
+# MASTER CSS  — injected once, covers everything
+# ══════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* ── Reset & base ── */
-*, *::before, *::after { box-sizing: border-box; }
-html, body, [class*="css"], .stApp {
-    font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif !important;
-    background-color: #f0f4f8 !important;
-    color: #0f172a !important;
+/* ── Base reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
+html, body, .stApp, [class*="css"] {
+    font-family: 'Inter', 'Segoe UI', sans-serif !important;
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
 }
 #MainMenu, footer, header { visibility: hidden; }
-.block-container {
-    padding: 0 !important;
-    max-width: 100% !important;
-}
+.block-container { padding: 0 !important; max-width: 100% !important; }
+section.main > div { padding: 0 !important; }
 
-/* ── Sidebar ── */
+/* ════════════════════════════════════
+   SIDEBAR — always dark, always visible
+   ════════════════════════════════════ */
 [data-testid="stSidebar"] {
-    background: #0c1426 !important;
-    min-width: 220px !important;
-    max-width: 220px !important;
+    background: #0f172a !important;
+    min-width: 240px !important;
+    max-width: 240px !important;
+    border-right: 1px solid #1e293b !important;
 }
-[data-testid="stSidebar"] > div:first-child { padding: 0 !important; }
-[data-testid="stSidebar"] * { color: #94a3b8 !important; }
+[data-testid="stSidebar"] > div:first-child {
+    padding: 0 !important;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+/* All text in sidebar muted slate */
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div {
+    color: #94a3b8 !important;
+}
+/* Nav buttons — transparent base */
 [data-testid="stSidebar"] .stButton > button {
     width: 100% !important;
     text-align: left !important;
     background: transparent !important;
     border: none !important;
-    border-left: 3px solid transparent !important;
-    border-radius: 0 !important;
+    border-radius: 8px !important;
     color: #94a3b8 !important;
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    padding: 10px 18px !important;
-    margin: 0 !important;
-    transition: all 0.12s !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    padding: 10px 16px !important;
+    margin: 1px 8px !important;
+    width: calc(100% - 16px) !important;
+    transition: background 0.15s, color 0.15s !important;
+    box-shadow: none !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(255,255,255,0.06) !important;
-    color: #fff !important;
-    border-left-color: #3b82f6 !important;
+    background: rgba(255,255,255,0.07) !important;
+    color: #e2e8f0 !important;
 }
+/* Active nav item */
 [data-testid="stSidebar"] .stButton > button[kind="primary"] {
     background: #1d4ed8 !important;
-    color: #fff !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
-    border-left: 3px solid #60a5fa !important;
-    border-radius: 6px !important;
-    margin: 2px 10px !important;
-    width: calc(100% - 20px) !important;
+    border-radius: 8px !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+    background: #2563eb !important;
+}
+/* Sign-out button */
+[data-testid="stSidebar"] .stButton:last-child > button {
+    color: #f87171 !important;
+    border: 1px solid #3f1515 !important;
+    background: rgba(220,38,38,0.08) !important;
+    margin-top: 4px !important;
+}
+[data-testid="stSidebar"] .stButton:last-child > button:hover {
+    background: rgba(220,38,38,0.18) !important;
 }
 
-/* ── Main content wrapper ── */
-.main-content {
-    padding: 28px 32px 40px 32px;
-    background: #f0f4f8;
-    min-height: 100vh;
-}
-
-/* ── Page header ── */
-.ph-wrap {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #ffffff;
-    padding: 16px 32px;
-    border-bottom: 1px solid #e2e8f0;
-    margin-bottom: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-.ph-title { font-size: 20px; font-weight: 800; color: #0f172a; }
-.ph-right { display: flex; align-items: center; gap: 16px; }
-.ph-saved { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #16a34a; font-weight: 600; }
-.ph-dot   { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; }
-.ph-date  { font-size: 12px; color: #94a3b8; }
-
-/* ── Metric cards ── */
-.metric-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 14px; margin-bottom: 24px; }
-.metric-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 16px 18px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-.metric-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: #64748b; margin-bottom: 8px; }
-.metric-value { font-size: 26px; font-weight: 800; }
-
-/* ── Filter pills ── */
-.pill-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-.pill {
-    padding: 6px 18px;
-    border-radius: 20px;
-    font-size: 12.5px;
-    font-weight: 600;
-    border: 1.5px solid #e2e8f0;
-    background: #fff;
-    color: #374151;
-    cursor: pointer;
-    white-space: nowrap;
-}
-.pill-active-all  { background:#dbeafe; color:#1d4ed8; border-color:#1d4ed8; }
-.pill-active-rk   { background:#ede9fe; color:#7c3aed; border-color:#7c3aed; }
-.pill-active-bt   { background:#cffafe; color:#0891b2; border-color:#0891b2; }
-.pill-active-el   { background:#ffedd5; color:#c2410c; border-color:#c2410c; }
-
-/* ── Cards ── */
-.sc-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
-}
-.sc-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 13px 18px;
-    border-bottom: 1px solid #f1f5f9;
-    background: #fafbfc;
-}
-.sc-card-title { font-size: 14px; font-weight: 700; color: #0f172a; }
-.sc-card-count {
-    font-size: 11px; font-weight: 600; color: #64748b;
-    background: #f1f5f9; padding: 3px 12px; border-radius: 99px;
-}
-.sc-card-body { padding: 18px; }
-
-/* ── Table ── */
-.orders-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-.orders-table th {
-    padding: 10px 14px;
-    background: #f8fafc;
-    font-size: 10.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #475569;
-    border-bottom: 2px solid #e2e8f0;
-    text-align: left;
-    white-space: nowrap;
-}
-.orders-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #1e293b;
-    vertical-align: middle;
-}
-.orders-table tr:hover td { background: #f8faff; }
-
-/* ── Badges ── */
-.badge {
-    display: inline-block;
-    padding: 3px 11px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-.co-tag {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 5px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-/* ── Form styling — always white bg, always dark text ── */
-.stTextInput > div > div > input,
-.stTextArea  > div > div > textarea,
-.stSelectbox > div > div > div,
-.stNumberInput > div > div > input,
-.stDateInput > div > div > input {
-    border-radius: 7px !important;
-    border: 1.5px solid #d1d5db !important;
-    font-size: 13px !important;
+/* ════════════════════════════════════
+   ALL INPUT FIELDS — white bg, dark text
+   Works on login page AND app pages
+   ════════════════════════════════════ */
+input, textarea,
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+.stTextInput input,
+.stTextArea textarea,
+.stNumberInput input,
+.stDateInput input {
+    background-color: #ffffff !important;
     background: #ffffff !important;
-    color: #0f172a !important;
-    padding: 9px 12px !important;
-    -webkit-text-fill-color: #0f172a !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    caret-color: #111827 !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    font-size: 13.5px !important;
+    font-family: 'Inter', sans-serif !important;
 }
-.stTextInput > div > div > input::placeholder,
-.stTextArea  > div > div > textarea::placeholder {
-    color: #9ca3af !important;
-    -webkit-text-fill-color: #9ca3af !important;
+input::placeholder, textarea::placeholder {
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
 }
-.stTextInput > div > div > input:focus,
-.stTextArea > div > div > textarea:focus {
-    border-color: #1d4ed8 !important;
-    box-shadow: 0 0 0 3px rgba(29,78,216,0.1) !important;
+input:focus, textarea:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
     outline: none !important;
-}
-/* Number / date inputs also white */
-.stNumberInput > div > div,
-.stDateInput   > div > div {
     background: #ffffff !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
 }
+
+/* Selectbox */
 .stSelectbox > div > div {
     background: #ffffff !important;
-    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    color: #111827 !important;
 }
-.stTextInput label, .stTextArea label, .stSelectbox label,
-.stNumberInput label, .stDateInput label, .stFileUploader label {
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    color: #374151 !important;
-    margin-bottom: 4px !important;
+.stSelectbox [data-baseweb="select"] > div {
+    background: #ffffff !important;
+    color: #111827 !important;
 }
 
-/* ── Buttons ── */
+/* Number input wrapper */
+.stNumberInput > div > div {
+    background: #ffffff !important;
+    border-radius: 8px !important;
+}
+/* Date input */
+.stDateInput > div > div {
+    background: #ffffff !important;
+    border-radius: 8px !important;
+}
+
+/* Form field labels */
+.stTextInput label, .stTextArea label, .stSelectbox label,
+.stNumberInput label, .stDateInput label, .stFileUploader label,
+.stCheckbox label {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* ════════════════════════════════════
+   BUTTONS (app-wide)
+   ════════════════════════════════════ */
 .stButton > button {
-    border-radius: 7px !important;
+    border-radius: 8px !important;
     font-weight: 600 !important;
     font-size: 13px !important;
-    padding: 8px 18px !important;
+    padding: 9px 20px !important;
     transition: all 0.15s !important;
     cursor: pointer !important;
+    border: 1.5px solid transparent !important;
 }
 .stButton > button[kind="primary"] {
     background: #1d4ed8 !important;
     border-color: #1d4ed8 !important;
     color: #fff !important;
 }
-.stButton > button[kind="primary"]:hover { background: #1e40af !important; }
+.stButton > button[kind="primary"]:hover {
+    background: #1e40af !important;
+    border-color: #1e40af !important;
+}
 .stButton > button[kind="secondary"] {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
     color: #374151 !important;
 }
+.stButton > button[kind="secondary"]:hover {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+}
 
-/* ── Tabs ── */
+/* ════════════════════════════════════
+   TABS
+   ════════════════════════════════════ */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
     border-bottom: 2px solid #e2e8f0 !important;
@@ -387,7 +351,7 @@ html, body, [class*="css"], .stApp {
     color: #64748b !important;
     font-weight: 500 !important;
     font-size: 13px !important;
-    padding: 10px 20px !important;
+    padding: 10px 22px !important;
     margin-bottom: -2px !important;
 }
 .stTabs [aria-selected="true"] {
@@ -396,394 +360,516 @@ html, body, [class*="css"], .stApp {
     font-weight: 700 !important;
 }
 
-/* ── DataFrames ── */
-.stDataFrame {
-    border-radius: 10px !important;
-    border: 1px solid #e2e8f0 !important;
-    overflow: hidden !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+/* ════════════════════════════════════
+   PAGE TOP-BAR
+   ════════════════════════════════════ */
+.topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 14px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.topbar-title { font-size: 18px; font-weight: 800; color: #0f172a; }
+.topbar-sub   { font-size: 12px; color: #64748b; margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+.saved-pill   {
+    display: flex; align-items: center; gap: 5px;
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 11.5px; font-weight: 600; color: #15803d;
+}
+.saved-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.date-chip  { font-size: 12px; color: #64748b; font-weight: 500; }
+
+/* ════════════════════════════════════
+   METRIC CARDS
+   ════════════════════════════════════ */
+.mcard {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+.mcard-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #64748b; margin-bottom: 10px;
+}
+.mcard-value { font-size: 28px; font-weight: 800; line-height: 1; }
+.mcard-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; border-radius: 12px 12px 0 0;
 }
 
-/* ── Progress bar ── */
-.stProgress > div { background: #f1f5f9 !important; border-radius: 4px !important; height: 6px !important; }
-.stProgress > div > div { background: #1d4ed8 !important; border-radius: 4px !important; }
-
-/* ── Alerts ── */
-.stSuccess, .stError, .stInfo, .stWarning { border-radius: 8px !important; }
-
-/* ── Expander ── */
-.streamlit-expanderHeader {
-    background: #f8fafc !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
+/* ════════════════════════════════════
+   TABLE CARD
+   ════════════════════════════════════ */
+.tcard {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.tcard-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fafbfc;
+}
+.tcard-title { font-size: 14px; font-weight: 700; color: #0f172a; }
+.tcard-badge {
+    font-size: 11px; font-weight: 600; color: #64748b;
+    background: #f1f5f9; padding: 3px 12px; border-radius: 20px;
+}
+.otable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.otable th {
+    padding: 10px 16px; background: #f8fafc;
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: #475569;
+    border-bottom: 2px solid #e2e8f0; text-align: left; white-space: nowrap;
+}
+.otable td {
+    padding: 13px 16px; border-bottom: 1px solid #f1f5f9;
+    color: #1e293b; vertical-align: middle;
 }
 
-/* ── Dividers ── */
-hr { border-color: #e2e8f0 !important; margin: 16px 0 !important; }
-
-/* ── Login page ── */
-.login-page-bg {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0c1426 0%, #1a3a6b 60%, #0c1426 100%);
-    display: flex; align-items: center; justify-content: center;
+/* ════════════════════════════════════
+   BADGES
+   ════════════════════════════════════ */
+.badge {
+    display: inline-block; padding: 4px 12px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.co-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 700;
 }
 
-/* ── Step bar ── */
-.step-bar { display: flex; align-items: center; margin-bottom: 20px; }
+/* ════════════════════════════════════
+   FORM CARD
+   ════════════════════════════════════ */
+.form-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+    max-width: 860px;
+}
+.form-card-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fafbfc;
+}
+.form-card-title { font-size: 14px; font-weight: 700; color: #0f172a; }
+.form-card-sub   { font-size: 12px; color: #64748b; margin-top: 3px; }
+.form-card-body  { padding: 24px; }
+
+/* ════════════════════════════════════
+   SECTION LABEL
+   ════════════════════════════════════ */
+.section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #94a3b8;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px; margin-bottom: 16px; margin-top: 8px;
+}
+
+/* ════════════════════════════════════
+   LOG / TIMELINE
+   ════════════════════════════════════ */
+.log-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: #ffffff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 13px 16px; margin-bottom: 8px;
+}
+.log-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #3b82f6; flex-shrink: 0; margin-top: 4px;
+}
+
+/* ════════════════════════════════════
+   INFO ROW (order details)
+   ════════════════════════════════════ */
+.info-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+    gap: 14px; background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 16px; margin-bottom: 18px;
+}
+.info-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 5px; }
+.info-val { font-size: 13.5px; font-weight: 600; color: #0f172a; }
+
+/* ════════════════════════════════════
+   PIPELINE STEPPER
+   ════════════════════════════════════ */
+.stepper { display: flex; align-items: center; margin: 0 0 22px; }
 .step-node {
-    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+}
+.step-circle {
+    width: 34px; height: 34px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; flex-shrink: 0;
+    font-size: 14px; font-weight: 700;
 }
 .step-done    { background: #1d4ed8; color: #fff; }
-.step-pending { background: #e2e8f0; color: #94a3b8; }
-.step-line-d  { flex: 1; height: 2px; background: #1d4ed8; margin: 0 4px; }
-.step-line-p  { flex: 1; height: 2px; background: #e2e8f0; margin: 0 4px; }
-.step-label   { font-size: 9px; text-align: center; margin-top: 4px; font-weight: 600; }
+.step-current { background: #dbeafe; color: #1d4ed8; border: 2px solid #1d4ed8; }
+.step-pending { background: #f1f5f9; color: #94a3b8; }
+.step-lbl { font-size: 9.5px; font-weight: 600; color: #64748b; margin-top: 5px; text-align: center; }
+.step-line { flex:1; height: 2px; margin: 0 4px; margin-bottom: 18px; }
+.step-line-done { background: #1d4ed8; }
+.step-line-pending { background: #e2e8f0; }
 
-/* ── Info row ── */
-.info-row {
-    display: flex; gap: 12px; flex-wrap: wrap;
-    background: #f8fafc; border: 1px solid #e2e8f0;
-    border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
-}
-.info-item { flex: 1; min-width: 120px; }
-.info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px; }
-.info-value { font-size: 13px; font-weight: 600; color: #0f172a; }
-
-/* ── Log entry ── */
-.log-entry {
-    display: flex; gap: 12px;
-    background: #fff; border: 1px solid #e2e8f0;
-    border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;
-}
-.log-dot { width: 8px; height: 8px; border-radius: 50%; background: #1d4ed8; flex-shrink: 0; margin-top: 5px; }
-
-/* ── Footer ── */
+/* ════════════════════════════════════
+   FOOTER
+   ════════════════════════════════════ */
 .sc-footer {
     text-align: center; font-size: 11px; color: #94a3b8;
-    padding: 14px 0 8px 0; border-top: 1px solid #e2e8f0; margin-top: 32px;
+    padding: 18px 0 10px; border-top: 1px solid #e2e8f0; margin-top: 36px;
 }
+
+/* ════════════════════════════════════
+   ALERTS
+   ════════════════════════════════════ */
+.stAlert { border-radius: 8px !important; }
+.stSuccess, .stError, .stInfo, .stWarning { border-radius: 8px !important; }
+
+/* ════════════════════════════════════
+   EXPANDER
+   ════════════════════════════════════ */
+.streamlit-expanderHeader {
+    background: #f8fafc !important; border-radius: 8px !important;
+    font-weight: 600 !important; font-size: 13px !important;
+}
+
+hr { border-color: #e2e8f0 !important; margin: 14px 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# HELPERS
-# ═══════════════════════════════════════════════════════════════════════════════
-def sbadge(status):
-    bg = STATUS_BG.get(status,"#f1f5f9"); fg = STATUS_FG.get(status,"#64748b")
-    return f'<span class="badge" style="background:{bg};color:{fg};">{STATUS_EMOJI.get(status,"")} {status}</span>'
+# ══════════════════════════════════════════════════════
+# BADGE HELPERS
+# ══════════════════════════════════════════════════════
+def sbadge(s):
+    bg = STATUS_BG.get(s,"#f1f5f9"); fg = STATUS_FG.get(s,"#64748b")
+    return f'<span class="badge" style="background:{bg};color:{fg};">{STATUS_EMOJI.get(s,"")} {s}</span>'
 
-def pbadge(priority):
-    bg = PRIO_BG.get(priority,"#f1f5f9"); fg = PRIO_FG.get(priority,"#64748b")
-    return f'<span class="badge" style="background:{bg};color:{fg};">{priority}</span>'
+def pbadge(p):
+    bg = PRIO_BG.get(p,"#f1f5f9"); fg = PRIO_FG.get(p,"#64748b")
+    return f'<span class="badge" style="background:{bg};color:{fg};">{p}</span>'
 
-def cobadge(company):
-    bg = CO_BG.get(company,"#f1f5f9"); fg = CO_FG.get(company,"#64748b")
-    return f'<span class="co-tag" style="background:{bg};color:{fg};">{company}</span>'
+def cobadge(c):
+    bg = CO_BG.get(c,"#f1f5f9"); fg = CO_FG.get(c,"#64748b")
+    return f'<span class="co-tag" style="background:{bg};color:{fg};">{c}</span>'
 
-def card_start(title, count=None):
-    cnt_html = f'<span class="sc-card-count">{count}</span>' if count is not None else ""
-    st.markdown(f'<div class="sc-card"><div class="sc-card-header"><span class="sc-card-title">{title}</span>{cnt_html}</div><div class="sc-card-body">', unsafe_allow_html=True)
-
-def card_end():
-    st.markdown('</div></div>', unsafe_allow_html=True)
-
-def page_header(title, subtitle=""):
+def topbar(title, subtitle=""):
     today = datetime.now().strftime("%d %b %Y")
-    sub_html = f'<div style="font-size:12px;color:#64748b;margin-top:2px;">{subtitle}</div>' if subtitle else ""
+    sub   = f'<div class="topbar-sub">{subtitle}</div>' if subtitle else ""
     st.markdown(f"""
-    <div class="ph-wrap">
-        <div>
-            <div class="ph-title">{title}</div>
-            {sub_html}
-        </div>
-        <div class="ph-right">
-            <span class="ph-saved"><span class="ph-dot"></span>&nbsp;Auto-saved</span>
-            <span class="ph-date">{today}</span>
+    <div class="topbar">
+        <div><div class="topbar-title">{title}</div>{sub}</div>
+        <div class="topbar-right">
+            <div class="saved-pill"><div class="saved-dot"></div>Auto-saved</div>
+            <div class="date-chip">📅 {today}</div>
         </div>
     </div>
-    <div style="height:20px;background:#f0f4f8;"></div>
+    <div style="height:24px;"></div>
     """, unsafe_allow_html=True)
 
 def show_footer():
-    st.markdown(f'<div class="sc-footer">© {datetime.now().year} Robokart. All rights reserved. Supply Chain Tracking System.</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="sc-footer">© {datetime.now().year} Robokart &nbsp;·&nbsp; '
+        f'Supply Chain Tracking System &nbsp;·&nbsp; All rights reserved.</div>',
+        unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════════════
+def section_label(text):
+    st.markdown(f'<div class="section-label">{text}</div>', unsafe_allow_html=True)
+
+def sp(px=12):
+    st.markdown(f'<div style="height:{px}px"></div>', unsafe_allow_html=True)
+
+# ══════════════════════════════════════════════════════
 # LOGIN PAGE
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def login_page():
+    # Override entire background to dark gradient; hide sidebar
     st.markdown("""
     <style>
-    /* ── Full page dark gradient background ── */
-    .stApp, html, body {
-        background: linear-gradient(135deg, #0c1426 0%, #1a3a6b 55%, #0c1426 100%) !important;
+    html, body, .stApp {
+        background: linear-gradient(135deg,#0c1426 0%,#1e3a5f 50%,#0c1426 100%) !important;
     }
-
-    /* ── Hide sidebar on login ── */
     [data-testid="stSidebar"] { display: none !important; }
+    .block-container { padding: 0 !important; }
+    section.main > div { padding: 0 !important; }
 
-    /* ── Center column gets white card treatment ── */
-    .block-container {
-        padding: 0 !important;
-        max-width: 100% !important;
-    }
-
-    /* ── The login card — applied to stForm ── */
-    [data-testid="stForm"] {
+    /* ── Override inputs specifically for login card ── */
+    .login-form-area input[type="text"],
+    .login-form-area input[type="password"],
+    .login-form-area input {
         background: #ffffff !important;
-        border-radius: 0 0 16px 16px !important;
-        padding: 28px 32px 36px 32px !important;
-        box-shadow: 0 24px 60px rgba(0,0,0,0.5) !important;
-        border: none !important;
-    }
-
-    /* ── Input fields: white bg, dark text, always ── */
-    [data-testid="stForm"] input[type="text"],
-    [data-testid="stForm"] input[type="password"],
-    [data-testid="stForm"] input {
-        background-color: #f8fafc !important;
         color: #111827 !important;
         -webkit-text-fill-color: #111827 !important;
+        caret-color: #111827 !important;
         border: 1.5px solid #d1d5db !important;
         border-radius: 8px !important;
-        font-size: 14px !important;
         height: 48px !important;
-        padding: 0 14px !important;
-        caret-color: #111827 !important;
+        font-size: 14px !important;
     }
-    [data-testid="stForm"] input[type="text"]:focus,
-    [data-testid="stForm"] input[type="password"]:focus {
-        border-color: #1d4ed8 !important;
-        box-shadow: 0 0 0 3px rgba(29,78,216,0.12) !important;
-        background-color: #ffffff !important;
-        outline: none !important;
-    }
-    /* placeholder text */
-    [data-testid="stForm"] input::placeholder {
-        color: #9ca3af !important;
-        -webkit-text-fill-color: #9ca3af !important;
-    }
-    /* Label text */
-    [data-testid="stForm"] label {
+    .login-form-area label {
         color: #374151 !important;
-        font-size: 13px !important;
         font-weight: 600 !important;
-        margin-bottom: 6px !important;
+        font-size: 13px !important;
     }
-
-    /* ── Sign In button: red to match screenshot, full width ── */
-    [data-testid="stForm"] button[kind="primaryFormSubmit"],
-    [data-testid="stForm"] .stButton > button {
-        background: #dc2626 !important;
-        color: #ffffff !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-        height: 50px !important;
-        border-radius: 8px !important;
-        border: none !important;
-        width: 100% !important;
-        letter-spacing: 0.5px !important;
-        margin-top: 12px !important;
-    }
-    [data-testid="stForm"] button[kind="primaryFormSubmit"]:hover,
-    [data-testid="stForm"] .stButton > button:hover {
-        background: #b91c1c !important;
-    }
-
-    /* ── Error alert ── */
-    .stAlert { border-radius: 8px !important; margin-top: 8px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    # Use 3 columns to center the card — ratio gives ~420px wide card
-    _, mid, _ = st.columns([1, 1.15, 1])
-    with mid:
-        st.markdown("<div style='height:60px'></div>", unsafe_allow_html=True)
+    # Vertical centering
+    st.markdown('<div style="min-height:80px"></div>', unsafe_allow_html=True)
 
-        # ── Card top: branding (pure HTML, above the form) ──
+    # 3-col centering
+    _, col, _ = st.columns([1, 1.2, 1])
+    with col:
+
+        # ── Branding header (pure HTML above form) ──
         st.markdown("""
         <div style="
-            background: #ffffff;
-            border-radius: 16px 16px 0 0;
-            padding: 38px 32px 28px 32px;
-            text-align: center;
-            border-bottom: 1px solid #f1f5f9;
-            box-shadow: 0 -2px 0 0 #e2e8f0;
+            background:#fff;
+            border-radius:14px 14px 0 0;
+            border:1px solid #e2e8f0;
+            border-bottom:none;
+            padding:38px 36px 26px;
+            text-align:center;
         ">
-            <div style="font-size:52px; line-height:1; margin-bottom:14px;">🏭</div>
-            <div style="font-size:22px; font-weight:800; color:#0f172a; line-height:1.35;">
-                Supply Chain Tracking System
-            </div>
-            <div style="font-size:13px; color:#64748b; margin-top:10px; font-weight:400;">
-                Sign in with your credentials to continue
+            <div style="
+                width:72px;height:72px;border-radius:16px;
+                background:linear-gradient(135deg,#1e3a5f,#1d4ed8);
+                display:flex;align-items:center;justify-content:center;
+                font-size:34px;margin:0 auto 16px;
+                box-shadow:0 4px 14px rgba(29,78,216,0.3);
+            ">🏭</div>
+            <div style="font-size:20px;font-weight:800;color:#0f172a;">Supply Chain Tracking System</div>
+            <div style="font-size:13px;color:#64748b;margin-top:8px;">
+                Enterprise Procurement &amp; Order Management
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # ── Card bottom: the Streamlit form (styled as bottom half of card via CSS) ──
-        with st.form("login_form", clear_on_submit=False):
-            st.text_input("Username", placeholder="Enter your username", key="li_user")
-            st.text_input("Password", type="password", placeholder="Enter your password", key="li_pass")
-            st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+        # ── Form bottom half of card ──
+        st.markdown("""
+        <div style="
+            background:#fff;
+            border-radius:0 0 14px 14px;
+            border:1px solid #e2e8f0;
+            border-top:1px solid #f1f5f9;
+            padding:28px 36px 32px;
+            box-shadow:0 20px 50px rgba(0,0,0,0.35);
+        ">
+            <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:18px;">
+                Sign in to your account
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Streamlit form — NOT wrapped in any HTML div
+        with st.form("login_form"):
+            uname = st.text_input("Username", placeholder="Enter your username")
+            passw = st.text_input("Password", type="password", placeholder="Enter your password")
+            sp(8)
             submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
 
         if submitted:
-            u = st.session_state.get("li_user", "")
-            p = st.session_state.get("li_pass", "")
-            if u in USERS and USERS[u]["password"] == p:
+            if uname in USERS and USERS[uname]["password"] == passw:
                 st.session_state.logged_in = True
-                st.session_state.username  = u
-                st.session_state.role      = USERS[u]["role"]
-                st.session_state.user_name = USERS[u]["name"]
+                st.session_state.username  = uname
+                st.session_state.role      = USERS[uname]["role"]
+                st.session_state.user_name = USERS[uname]["name"]
                 st.session_state.menu      = "Dashboard"
                 st.rerun()
             else:
-                st.error("⚠ Invalid username or password. Please try again.")
+                st.error("⚠ Invalid credentials. Please check username and password.")
 
         st.markdown("""
-        <p style="text-align:center; font-size:12px; color:#94a3b8; margin-top:18px;">
-            Contact your administrator for login credentials.
-        </p>
-        """, unsafe_allow_html=True)
+        <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:18px;">
+            🔒 Secure access · Contact admin for credentials
+        </p>""", unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # SIDEBAR
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def render_sidebar():
     with st.sidebar:
-        # Logo block
+        # ── Logo ──
         st.markdown("""
-        <div style="padding:22px 18px 16px;border-bottom:1px solid #1e293b;">
-            <div style="font-size:20px;font-weight:800;color:#f97316;">🏭 Supply Chain</div>
-            <div style="font-size:10px;color:#475569;letter-spacing:1px;margin-top:3px;">TRACKING SYSTEM</div>
+        <div style="padding:22px 16px 18px;border-bottom:1px solid #1e293b;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="
+                    width:36px;height:36px;border-radius:8px;
+                    background:linear-gradient(135deg,#1e3a5f,#1d4ed8);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:18px;flex-shrink:0;">🏭</div>
+                <div>
+                    <div style="font-size:14px;font-weight:800;color:#f8fafc;">Supply Chain</div>
+                    <div style="font-size:9px;color:#475569;letter-spacing:1.2px;text-transform:uppercase;">Tracking System</div>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+        sp(10)
 
-        # Navigation
-        menus = ROLE_MENUS[st.session_state.role]
+        # ── Nav label ──
+        st.markdown('<div style="padding:0 16px;font-size:9.5px;font-weight:700;letter-spacing:1.2px;color:#334155;text-transform:uppercase;margin-bottom:4px;">Navigation</div>', unsafe_allow_html=True)
+
+        # ── Nav buttons ──
+        menus = ROLE_MENUS.get(st.session_state.role, [])
         for m in menus:
-            active = st.session_state.menu == m
-            icon   = MENU_ICONS.get(m,"")
-            if st.button(f"{icon}  {m}", key=f"nav_{m}", use_container_width=True,
-                         type="primary" if active else "secondary"):
+            is_active = (st.session_state.menu == m)
+            icon      = MENU_ICONS.get(m, "")
+            btn_type  = "primary" if is_active else "secondary"
+            if st.button(f"{icon}  {m}", key=f"nav_{m}",
+                         use_container_width=True, type=btn_type):
                 st.session_state.menu = m
                 st.rerun()
 
-        # User block at bottom
-        role   = st.session_state.role
-        rc     = ROLE_COLOR.get(role,"#64748b")
-        rb     = ROLE_BG.get(role,"#f1f5f9")
+        sp(12)
+        st.markdown('<div style="height:1px;background:#1e293b;margin:0 16px;"></div>', unsafe_allow_html=True)
+        sp(12)
+
+        # ── User card ──
+        role = st.session_state.role
+        rc   = ROLE_COLOR.get(role,"#64748b")
+        rb   = ROLE_BG.get(role,"#1e293b")
+        initials = "".join([x[0].upper() for x in st.session_state.user_name.split()[:2]])
         st.markdown(f"""
-        <div style="position:fixed;bottom:0;width:200px;padding:14px 18px;
-                    border-top:1px solid #1e293b;background:#0c1426;">
-            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;">
-                {st.session_state.user_name}
+        <div style="padding:0 16px;margin-bottom:10px;">
+            <div style="background:#1e293b;border-radius:10px;padding:12px 14px;
+                        display:flex;align-items:center;gap:10px;">
+                <div style="
+                    width:36px;height:36px;border-radius:8px;
+                    background:{rc};color:#fff;
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:13px;font-weight:800;flex-shrink:0;">{initials}</div>
+                <div style="flex:1;overflow:hidden;">
+                    <div style="font-size:12.5px;font-weight:700;color:#f1f5f9;
+                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {st.session_state.user_name}
+                    </div>
+                    <span style="font-size:10px;font-weight:700;
+                                 background:{rb};color:{rc};
+                                 padding:1px 8px;border-radius:4px;">{role}</span>
+                </div>
             </div>
-            <span style="background:{rb};color:{rc};padding:2px 10px;border-radius:99px;
-                         font-size:11px;font-weight:700;">{role}</span>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown("<div style='height:80px'></div>", unsafe_allow_html=True)
+
         if st.button("← Sign Out", use_container_width=True, key="signout"):
             for k in list(st.session_state.keys()):
                 del st.session_state[k]
             st.rerun()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+        sp(16)
+
+# ══════════════════════════════════════════════════════
 # DASHBOARD
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def page_dashboard():
-    page_header("📊 Dashboard", "Overview of all purchase orders and supply chain status")
+    topbar("📊 Dashboard", "Real-time overview of all purchase orders and supply chain status")
 
     D      = st.session_state.data
     orders = D["orders"].copy()
     cf     = st.session_state.company_filter
     fil    = orders if cf == "All" else orders[orders["company"] == cf]
-    tv     = fil["total_value"].astype(float).sum() if len(fil) else 0.0
+    total_val = fil["total_value"].astype(float).sum() if len(fil) else 0.0
 
-    # Content padding wrapper
-    st.markdown('<div style="padding:24px 32px 0 32px;">', unsafe_allow_html=True)
+    pad = "padding:0 28px;"
 
-    # ── Metric cards ──
+    # ── KPI cards ──
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
     metrics = [
-        ("TOTAL ORDERS",  str(len(fil)),                                                                "#1d4ed8"),
-        ("PENDING",       str(len(fil[fil["current_status"]=="Pending"])),                              "#d97706"),
-        ("IN TRANSIT",    str(len(fil[fil["current_status"].isin(["Procured","Dispatched"])])),         "#7c3aed"),
-        ("DELIVERED",     str(len(fil[fil["current_status"].isin(["Delivered","Invoiced","Paid"])])),   "#059669"),
-        ("PAID",          str(len(fil[fil["current_status"]=="Paid"])),                                 "#16a34a"),
-        ("TOTAL VALUE",   f"₹{tv/100000:.1f}L",                                                        "#f97316"),
+        ("Total Orders",  len(fil),                                                               "#1d4ed8"),
+        ("Pending",       len(fil[fil["current_status"]=="Pending"]),                             "#d97706"),
+        ("In Transit",    len(fil[fil["current_status"].isin(["Procured","Dispatched"])]),        "#6d28d9"),
+        ("Delivered",     len(fil[fil["current_status"].isin(["Delivered","Invoiced","Paid"])]),  "#059669"),
+        ("Paid",          len(fil[fil["current_status"]=="Paid"]),                                "#0891b2"),
+        ("Total Value",   f"₹{total_val/100000:.1f}L",                                           "#c2410c"),
     ]
     cols = st.columns(6)
-    for col,(label,value,color) in zip(cols,metrics):
+    for col, (label, value, color) in zip(cols, metrics):
         with col:
             st.markdown(f"""
-            <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid {color};
-                        border-radius:10px;padding:18px 16px 16px;
-                        box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;
-                            letter-spacing:0.7px;color:#64748b;margin-bottom:10px;">{label}</div>
-                <div style="font-size:28px;font-weight:800;color:{color};line-height:1;">{value}</div>
+            <div class="mcard">
+                <div class="mcard-bar" style="background:{color};"></div>
+                <div class="mcard-label">{label}</div>
+                <div class="mcard-value" style="color:{color};">{value}</div>
             </div>""", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+    sp(20)
 
-    # ── Company filter buttons ──
-    c_all, c_rk, c_bt, c_el, _ = st.columns([1.4, 1, 1.3, 0.7, 3])
-    with c_all:
-        if st.button("🏢 All Companies" + (" ✓" if cf=="All" else ""), key="f_all",
-                     type="primary" if cf=="All" else "secondary", use_container_width=True):
-            st.session_state.company_filter = "All"; st.rerun()
-    with c_rk:
-        if st.button("Robokart" + (" ✓" if cf=="Robokart" else ""), key="f_rk",
-                     type="primary" if cf=="Robokart" else "secondary", use_container_width=True):
-            st.session_state.company_filter = "Robokart"; st.rerun()
-    with c_bt:
-        if st.button("Bharat Tech" + (" ✓" if cf=="Bharat Tech" else ""), key="f_bt",
-                     type="primary" if cf=="Bharat Tech" else "secondary", use_container_width=True):
-            st.session_state.company_filter = "Bharat Tech"; st.rerun()
-    with c_el:
-        if st.button("EL" + (" ✓" if cf=="EL" else ""), key="f_el",
-                     type="primary" if cf=="EL" else "secondary", use_container_width=True):
-            st.session_state.company_filter = "EL"; st.rerun()
+    # ── Company filter ──
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
+    fc1, fc2, fc3, fc4, _ = st.columns([1.5, 1, 1.3, 0.8, 3])
+    for col, label, key in [
+        (fc1, "🏢 All Companies", "All"),
+        (fc2, "Robokart",        "Robokart"),
+        (fc3, "Bharat Tech",     "Bharat Tech"),
+        (fc4, "EL",              "EL"),
+    ]:
+        with col:
+            active = cf == key
+            lbl    = label + (" ✓" if active else "")
+            if st.button(lbl, key=f"cf_{key}",
+                         type="primary" if active else "secondary",
+                         use_container_width=True):
+                st.session_state.company_filter = key
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+    sp(18)
 
-    # ── Orders table card ──
-    title = "All Orders" if cf == "All" else f"{cf} Orders"
+    # ── Orders table ──
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
+    title_label = "All Orders" if cf == "All" else f"{cf} Orders"
+
     TH = ("padding:11px 16px;background:#f8fafc;font-size:10.5px;font-weight:700;"
           "text-transform:uppercase;letter-spacing:0.5px;color:#475569;"
           "border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;")
-    TD = ("padding:13px 16px;border-bottom:1px solid #f1f5f9;"
-          "color:#1e293b;vertical-align:middle;font-size:12.5px;")
+    TD = "padding:13px 16px;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle;"
 
     if len(fil) == 0:
-        no_data = '<div style="padding:32px;text-align:center;color:#94a3b8;font-size:13px;">No orders found for this company.</div>'
-        table_body = no_data
+        tbody = '<tr><td colspan="10" style="padding:32px;text-align:center;color:#94a3b8;font-size:13px;">No orders found.</td></tr>'
     else:
-        rows_html = ""
+        tbody = ""
         for i, (_, r) in enumerate(fil.iterrows()):
-            bg = "#ffffff" if i % 2 == 0 else "#fafbfc"
-            desc = str(r['item_description'])
-            if len(desc) > 40:
-                desc = desc[:40] + "..."
-            rows_html += f"""
-            <tr style="background:{bg};" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='{bg}'">
-                <td style="{TD}font-weight:700;color:#1d4ed8;font-size:11.5px;white-space:nowrap;">{r['order_id']}</td>
+            bg   = "#ffffff" if i % 2 == 0 else "#fafbfc"
+            desc = str(r["item_description"])
+            desc = desc[:42] + "…" if len(desc) > 42 else desc
+            tbody += f"""<tr style="background:{bg}">
+                <td style="{TD}font-weight:700;color:#1d4ed8;font-size:12px;white-space:nowrap;">{r['order_id']}</td>
                 <td style="{TD}">{cobadge(r['company'])}</td>
-                <td style="{TD}color:#64748b;font-size:11.5px;">{r['po_number']}</td>
-                <td style="{TD}">{r['govt_department']}</td>
-                <td style="{TD}color:#374151;">{desc}</td>
+                <td style="{TD}color:#64748b;font-size:12px;">{r['po_number']}</td>
+                <td style="{TD}font-size:12.5px;">{r['govt_department']}</td>
+                <td style="{TD}color:#374151;font-size:12.5px;">{desc}</td>
                 <td style="{TD}text-align:center;font-weight:600;">{r['quantity']}</td>
                 <td style="{TD}font-weight:700;white-space:nowrap;">₹{float(r['total_value']):,.0f}</td>
                 <td style="{TD}">{pbadge(r['priority'])}</td>
                 <td style="{TD}">{sbadge(r['current_status'])}</td>
-                <td style="{TD}color:#94a3b8;font-size:11px;white-space:nowrap;">{r['last_updated']}</td>
+                <td style="{TD}color:#94a3b8;font-size:11.5px;white-space:nowrap;">{r['last_updated']}</td>
             </tr>"""
-        table_body = f"""
-        <table style="width:100%;border-collapse:collapse;">
+
+    st.markdown(f"""
+    <div class="tcard">
+        <div class="tcard-header">
+            <div class="tcard-title">📦 {title_label}</div>
+            <div class="tcard-badge">{len(fil)} orders</div>
+        </div>
+        <div style="overflow-x:auto;">
+        <table class="otable">
             <thead><tr>
                 <th style="{TH}">Order ID</th>
                 <th style="{TH}">Company</th>
@@ -796,76 +882,90 @@ def page_dashboard():
                 <th style="{TH}">Status</th>
                 <th style="{TH}">Last Updated</th>
             </tr></thead>
-            <tbody>{rows_html}</tbody>
-        </table>"""
-
-    st.markdown(f"""
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;
-                box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden;">
-        <div style="display:flex;justify-content:space-between;align-items:center;
-                    padding:14px 20px;border-bottom:1px solid #f1f5f9;background:#fafbfc;">
-            <div style="font-size:14px;font-weight:700;color:#0f172a;">📦 {title}</div>
-            <div style="font-size:11px;font-weight:600;color:#64748b;
-                        background:#f1f5f9;padding:4px 14px;border-radius:99px;">
-                {len(fil)} orders
-            </div>
-        </div>
-        <div style="overflow-x:auto;">{table_body}</div>
+            <tbody>{tbody}</tbody>
+        </table></div>
     </div>
     """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)  # close content wrapper
-    st.markdown("<div style='padding:0 32px;'>", unsafe_allow_html=True)
+    sp(8)
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
     show_footer()
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # NEW ORDER
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def page_new_order():
-    page_header("➕ New Order", "Create a new government purchase order")
-    D = st.session_state.data
+    topbar("➕ New Order", "Create a new government purchase order")
+    D   = st.session_state.data
+    pad = "padding:0 28px;"
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
 
-    card_start("📝 Purchase Order Details")
+    st.markdown("""
+    <div class="form-card">
+        <div class="form-card-header">
+            <div class="form-card-title">📝 Purchase Order Details</div>
+            <div class="form-card-sub">Fill all required fields marked with *</div>
+        </div>
+        <div class="form-card-body">
+    """, unsafe_allow_html=True)
+
     with st.form("new_order_form", clear_on_submit=True):
-        st.markdown("**Select Company \\***")
-        company = st.selectbox("Company", COMPANIES, label_visibility="collapsed", key="no_company")
-        st.markdown("---")
-        c1,c2 = st.columns(2)
+        section_label("Company & Department")
+        c1, c2 = st.columns(2)
         with c1:
-            govt_dept    = st.text_input("Govt Department *",    placeholder="e.g., Education Department Delhi")
-            contact_name = st.text_input("Contact Person *",     placeholder="e.g., Mr. Rajesh Kumar")
-            contact_ph   = st.text_input("Contact Phone",        placeholder="e.g., 9876543210")
-            po_number    = st.text_input("PO Number *",          placeholder="e.g., PO/EDU/2026/001")
+            company   = st.selectbox("Company *", COMPANIES)
         with c2:
-            assigned_co  = st.text_input("Assigned Company",     placeholder="e.g., Tech Solutions Pvt Ltd")
-            exp_delivery = st.date_input("Expected Delivery Date")
-            quantity     = st.number_input("Quantity *",         min_value=1, value=1)
-            total_value  = st.number_input("Total Value (₹) *",  min_value=0, value=0)
-        c3,_ = st.columns([1,2])
+            priority  = st.selectbox("Priority *", PRIORITIES, index=1)
+
+        c3, c4 = st.columns(2)
         with c3:
-            priority = st.selectbox("Priority", PRIORITIES, index=1)
-        item_desc = st.text_area("Item Description *", placeholder="Detailed description of goods/services to be procured...", height=100)
-        remarks   = st.text_area("Remarks",            placeholder="Any additional remarks or special instructions...", height=70)
-        st.markdown("<br>", unsafe_allow_html=True)
-        submitted = st.form_submit_button("🚀 Create Order", use_container_width=True, type="primary")
+            govt_dept = st.text_input("Govt Department *", placeholder="e.g. Education Department Delhi")
+        with c4:
+            po_number = st.text_input("PO Number *", placeholder="e.g. PO/EDU/2026/001")
+
+        sp(4)
+        section_label("Contact Information")
+        c5, c6 = st.columns(2)
+        with c5:
+            contact_name = st.text_input("Contact Person *", placeholder="e.g. Mr. Rajesh Kumar")
+        with c6:
+            contact_ph   = st.text_input("Contact Phone", placeholder="e.g. 9876543210")
+
+        sp(4)
+        section_label("Order Details")
+        c7, c8 = st.columns(2)
+        with c7:
+            quantity    = st.number_input("Quantity *", min_value=1, value=1)
+            total_value = st.number_input("Total Value (₹) *", min_value=0, value=0)
+        with c8:
+            assigned_co  = st.text_input("Assigned Company", placeholder="e.g. Tech Solutions Pvt Ltd")
+            exp_delivery = st.date_input("Expected Delivery Date")
+
+        item_desc = st.text_area("Item Description *",
+                                  placeholder="Detailed description of goods/services to be procured…", height=90)
+        remarks   = st.text_area("Remarks / Special Instructions",
+                                  placeholder="Any additional notes…", height=68)
+
+        sp(8)
+        sub_col, _ = st.columns([1, 2])
+        with sub_col:
+            submitted = st.form_submit_button("🚀 Create Purchase Order", type="primary", use_container_width=True)
 
         if submitted:
-            errors = []
-            if not govt_dept:    errors.append("Govt Department")
-            if not contact_name: errors.append("Contact Person")
-            if not po_number:    errors.append("PO Number")
-            if not item_desc:    errors.append("Item Description")
-            if not total_value:  errors.append("Total Value")
+            errors = [f for f, v in [("Govt Dept", govt_dept), ("PO Number", po_number),
+                                       ("Contact Person", contact_name), ("Item Description", item_desc),
+                                       ("Total Value", total_value)] if not v]
             if errors:
-                st.error(f"Please fill: {', '.join(errors)}")
+                st.error(f"Please fill required fields: {', '.join(errors)}")
             elif po_number in D["orders"]["po_number"].values:
-                st.error("⚠ PO Number already exists!")
+                st.error("⚠ PO Number already exists in the system.")
             else:
-                ts       = now_ist()
-                order_id = f"ORD-{ts[:10]}-{str(len(D['orders'])+1).zfill(3)}"
-                new_row  = pd.DataFrame([{
-                    "order_id":order_id,"date_created":ts,"company":company,
+                ts = now_ist()
+                oid = f"ORD-{ts[:10]}-{str(len(D['orders'])+1).zfill(3)}"
+                new_row = pd.DataFrame([{
+                    "order_id":oid,"date_created":ts,"company":company,
                     "govt_department":govt_dept,"contact_person":contact_name,
                     "contact_phone":contact_ph,"po_number":po_number,
                     "item_description":item_desc,"quantity":str(quantity),
@@ -874,242 +974,278 @@ def page_new_order():
                     "expected_delivery_date":str(exp_delivery),
                     "remarks":remarks,"created_by":st.session_state.user_name,"last_updated":ts
                 }])
-                D["orders"] = pd.concat([D["orders"],new_row],ignore_index=True)
+                D["orders"] = pd.concat([D["orders"], new_row], ignore_index=True)
                 save_table("orders")
-                add_log(order_id,"ORDER_CREATED","—","Pending",st.session_state.user_name,f"Order created [{company}]")
-                st.success(f"✅ Order **{order_id}** created successfully!")
-    card_end()
+                add_log(oid,"ORDER_CREATED","—","Pending",st.session_state.user_name,
+                        f"Order created for {company} — {po_number}")
+                st.success(f"✅ Order **{oid}** created successfully!")
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     show_footer()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # UPDATE ORDER
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def page_update_order():
-    page_header("🔄 Update Order", "Update procurement, dispatch, delivery or invoice status")
-    D = st.session_state.data
-
-    order_opts = ["— Select an order —"] + [
-        f"{r['order_id']}  ·  {r['po_number']}  ·  [{r['current_status']}]"
-        for _,r in D["orders"].iterrows()
-    ]
-    sel = st.selectbox("Select Order *", order_opts, key="uo_sel")
-    if sel == "— Select an order —":
-        st.info("👆 Select an order above to begin updating.")
-        show_footer()
-        return
-
-    oid   = sel.split("  ·  ")[0].strip()
-    order = get_order(oid)
-
-    # Live status info bar
-    s  = order["current_status"]
-    co = order["company"]
-    st.markdown(f"""
-    <div class="info-row">
-        <div class="info-item">
-            <div class="info-label">Company</div>
-            <div class="info-value">{cobadge(co)}</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Current Status</div>
-            <div class="info-value">{sbadge(s)}</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Order Value</div>
-            <div class="info-value" style="font-weight:700;">₹{float(order['total_value']):,.0f}</div>
-        </div>
-        <div class="info-item" style="flex:2">
-            <div class="info-label">Department</div>
-            <div class="info-value">{order['govt_department']}</div>
-        </div>
-        <div class="info-item">
-            <div class="info-label">Priority</div>
-            <div class="info-value">{pbadge(order['priority'])}</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    updated_by = st.text_input("Your Name / Department *", placeholder="e.g., Rahul — Logistics Team", key="uo_by")
-    st.markdown("---")
-
-    tab1, tab2, tab3, tab4 = st.tabs(["🔧  Procurement", "🚚  Dispatch", "📦  Delivery", "💰  Invoice"])
-
-    # ── PROCUREMENT ──
-    with tab1:
-        with st.form("proc_form"):
-            c1,c2 = st.columns(2)
-            with c1:
-                p_status = st.selectbox("Procurement Status *", ["","Not_Started","In_Progress","Completed","On_Hold"])
-                p_date   = st.date_input("Procurement Date", key="pd")
-                p_source = st.text_input("Materials Source", placeholder="Vendor / Warehouse name")
-            with c2:
-                p_qc     = st.selectbox("QC Status", ["","Pending","In_Progress","Passed","Failed"])
-                p_notes  = st.text_area("Notes", height=110)
-            sv = st.form_submit_button("✅ Save Procurement Update", use_container_width=True, type="primary")
-            if sv:
-                if not updated_by: st.error("Please enter your name above the tabs."); st.stop()
-                ts = now_ist()
-                row = pd.DataFrame([{"id":str(len(D["procurement"])+1),"order_id":oid,
-                    "procurement_status":p_status,"procurement_date":str(p_date),
-                    "materials_source":p_source,"quality_check_status":p_qc,
-                    "notes":p_notes,"updated_by":updated_by,"updated_at":ts}])
-                D["procurement"] = pd.concat([D["procurement"],row],ignore_index=True)
-                save_table("procurement")
-                ns = "Procured" if p_status=="Completed" else order["current_status"]
-                prev = order["current_status"]
-                update_order_status(oid, ns)
-                add_log(oid,"STATUS_CHANGE",prev,ns,updated_by,f"Procurement: {p_status}")
-                st.success(f"✅ Saved! Status updated → **{ns}**")
-                st.rerun()
-
-    # ── DISPATCH ──
-    with tab2:
-        with st.form("disp_form"):
-            c1,c2 = st.columns(2)
-            with c1:
-                d_date    = st.date_input("Dispatch Date", key="dd")
-                d_courier = st.text_input("Courier / Transporter *", placeholder="e.g., BlueDart, DTDC")
-                d_vehicle = st.text_input("Vehicle Number", placeholder="e.g., DL01AB1234")
-            with c2:
-                d_driver  = st.text_input("Driver Contact")
-                d_track   = st.text_input("Tracking Number")
-                d_expd    = st.date_input("Expected Delivery", key="ded")
-            sv = st.form_submit_button("✅ Save Dispatch Update", use_container_width=True, type="primary")
-            if sv:
-                if not updated_by: st.error("Please enter your name above the tabs."); st.stop()
-                ts = now_ist()
-                row = pd.DataFrame([{"id":str(len(D["dispatch"])+1),"order_id":oid,
-                    "dispatch_date":str(d_date),"courier_name":d_courier,
-                    "vehicle_number":d_vehicle,"driver_contact":d_driver,
-                    "tracking_number":d_track,"expected_delivery_date":str(d_expd),
-                    "updated_by":updated_by,"updated_at":ts}])
-                D["dispatch"] = pd.concat([D["dispatch"],row],ignore_index=True)
-                save_table("dispatch")
-                prev = order["current_status"]
-                update_order_status(oid,"Dispatched")
-                add_log(oid,"STATUS_CHANGE",prev,"Dispatched",updated_by,f"Dispatched via {d_courier}")
-                st.success("✅ Dispatch saved! Status → **Dispatched**")
-                st.rerun()
-
-    # ── DELIVERY ──
-    with tab3:
-        with st.form("del_form"):
-            c1,c2 = st.columns(2)
-            with c1:
-                de_status = st.selectbox("Delivery Status *", ["","Delivered","Partial","Failed","Rescheduled"])
-                de_date   = st.date_input("Delivery Date", key="dld")
-                de_recv   = st.text_input("Receiver Name")
-            with c2:
-                de_qty    = st.number_input("Delivered Quantity", min_value=0, key="dq")
-                de_ch     = st.text_input("Challan Number")
-            st.markdown("**📸 Delivery Photos / Files** *(any type, multiple allowed)*")
-            del_files = st.file_uploader("Upload delivery proof", accept_multiple_files=True, key="dlf", label_visibility="collapsed")
-            st.markdown("**📋 Challan Documents** *(PDF, images, etc.)*")
-            ch_files  = st.file_uploader("Upload challan copies", accept_multiple_files=True, key="chf", label_visibility="collapsed")
-            sv = st.form_submit_button("✅ Save Delivery Update", use_container_width=True, type="primary")
-            if sv:
-                if not updated_by: st.error("Please enter your name above the tabs."); st.stop()
-                ts = now_ist()
-                row = pd.DataFrame([{"id":str(len(D["delivery"])+1),"order_id":oid,
-                    "delivery_status":de_status,"delivery_date":str(de_date),
-                    "receiver_name":de_recv,"delivered_quantity":str(de_qty),
-                    "challan_number":de_ch,
-                    "delivery_files":f"{len(del_files or [])} file(s)",
-                    "challan_files":f"{len(ch_files or [])} file(s)",
-                    "updated_by":updated_by,"updated_at":ts}])
-                D["delivery"] = pd.concat([D["delivery"],row],ignore_index=True)
-                save_table("delivery")
-                ns = "Delivered" if de_status=="Delivered" else order["current_status"]
-                prev = order["current_status"]
-                update_order_status(oid, ns)
-                add_log(oid,"STATUS_CHANGE",prev,ns,updated_by,
-                        f"Delivery: {de_status} | {len(del_files or [])} delivery + {len(ch_files or [])} challan files")
-                st.success(f"✅ Delivery saved! Status → **{ns}**")
-                st.rerun()
-
-    # ── INVOICE ──
-    with tab4:
-        with st.form("inv_form"):
-            c1,c2 = st.columns(2)
-            with c1:
-                i_num    = st.text_input("Invoice Number", placeholder="e.g., INV-2026-0001")
-                i_date   = st.date_input("Invoice Date", key="id")
-                i_amount = st.number_input("Invoice Amount (₹)", min_value=0, key="ia")
-                i_pstat  = st.selectbox("Payment Status *", ["","Pending","Approved","Completed"])
-            with c2:
-                i_pmode  = st.selectbox("Payment Mode", ["","NEFT","RTGS","Cheque","DD","Online","Cash"])
-                i_txn    = st.text_input("Transaction Reference")
-                i_pdate  = st.date_input("Payment Date", key="ipd")
-            st.markdown("**🧾 Invoice Files** *(PDF, Excel, scanned copies — multiple allowed)*")
-            inv_files = st.file_uploader("Upload invoice files", accept_multiple_files=True, key="ivf", label_visibility="collapsed")
-            sv = st.form_submit_button("✅ Save Invoice Update", use_container_width=True, type="primary")
-            if sv:
-                if not updated_by: st.error("Please enter your name above the tabs."); st.stop()
-                ts = now_ist()
-                row = pd.DataFrame([{"id":str(len(D["invoices"])+1),"order_id":oid,
-                    "invoice_number":i_num,"invoice_date":str(i_date),
-                    "invoice_amount":str(i_amount),"payment_status":i_pstat,
-                    "payment_date":str(i_pdate),"payment_mode":i_pmode,
-                    "transaction_reference":i_txn,
-                    "invoice_files":f"{len(inv_files or [])} file(s)",
-                    "updated_by":updated_by,"updated_at":ts}])
-                D["invoices"] = pd.concat([D["invoices"],row],ignore_index=True)
-                save_table("invoices")
-                ns = "Paid" if i_pstat=="Completed" else "Invoiced"
-                prev = order["current_status"]
-                update_order_status(oid, ns)
-                add_log(oid,"STATUS_CHANGE",prev,ns,updated_by,
-                        f"Invoice {i_num} | {i_pstat} | {len(inv_files or [])} files")
-                st.success(f"✅ Invoice saved! Status → **{ns}**")
-                st.rerun()
-
-    show_footer()
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# ORDER DETAILS
-# ═══════════════════════════════════════════════════════════════════════════════
-def page_order_details():
-    page_header("🔍 Order Details", "Full order information, timeline and activity log")
-    D = st.session_state.data
+    topbar("🔄 Update Order", "Update procurement, dispatch, delivery or invoice status")
+    D   = st.session_state.data
+    pad = "padding:0 28px;"
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
 
     opts = ["— Select an order —"] + [
-        f"{r['order_id']}  ·  {r['po_number']}  ·  {r['current_status']}"
-        for _,r in D["orders"].iterrows()
+        f"{r['order_id']}  ·  {r['po_number']}  ·  [{r['current_status']}]"
+        for _, r in D["orders"].iterrows()
     ]
-    sel = st.selectbox("Select Order", opts, key="od_sel")
+    sel = st.selectbox("Select Order *", opts, key="uo_sel")
+
     if sel == "— Select an order —":
-        st.info("👆 Select an order to view its complete details.")
+        st.info("👆 Select an order from the dropdown above to update its status.")
+        st.markdown('</div>', unsafe_allow_html=True)
         show_footer(); return
 
     oid   = sel.split("  ·  ")[0].strip()
     order = get_order(oid)
 
-    # ── Order header card ──
-    s = order["current_status"]
+    # Order summary bar
     st.markdown(f"""
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px 24px;
-                box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:20px;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+    <div class="info-grid">
+        <div><div class="info-lbl">Order ID</div>
+             <div class="info-val" style="color:#1d4ed8;">{order['order_id']}</div></div>
+        <div><div class="info-lbl">Company</div>
+             <div class="info-val">{cobadge(order['company'])}</div></div>
+        <div><div class="info-lbl">Status</div>
+             <div class="info-val">{sbadge(order['current_status'])}</div></div>
+        <div><div class="info-lbl">Priority</div>
+             <div class="info-val">{pbadge(order['priority'])}</div></div>
+        <div><div class="info-lbl">Value</div>
+             <div class="info-val" style="font-weight:800;">₹{float(order['total_value']):,.0f}</div></div>
+        <div><div class="info-lbl">Department</div>
+             <div class="info-val">{order['govt_department']}</div></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    updated_by = st.text_input("Your Name / Department *",
+                                placeholder="e.g. Rahul — Logistics Team", key="uo_by")
+
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🔧  Procurement", "🚚  Dispatch", "📦  Delivery", "💰  Invoice & Payment"
+    ])
+
+    # ── Procurement ──
+    with tab1:
+        st.markdown('<div class="form-card" style="max-width:720px;">'
+                    '<div class="form-card-header"><div class="form-card-title">Procurement Details</div></div>'
+                    '<div class="form-card-body">', unsafe_allow_html=True)
+        with st.form("proc_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                p_status = st.selectbox("Status *", ["","Not Started","In Progress","Completed","On Hold"])
+                p_date   = st.date_input("Procurement Date")
+            with c2:
+                p_qc     = st.selectbox("Quality Check", ["","Pending","In Progress","Passed","Failed"])
+                p_source = st.text_input("Materials Source", placeholder="Vendor / Warehouse name")
+            p_notes = st.text_area("Notes", height=80)
+            sv = st.form_submit_button("✅ Save Procurement Update", type="primary")
+            if sv:
+                if not updated_by:
+                    st.error("Enter your name above the tabs first.")
+                else:
+                    ts = now_ist()
+                    D["procurement"] = pd.concat([D["procurement"], pd.DataFrame([{
+                        "id":str(len(D["procurement"])+1),"order_id":oid,
+                        "procurement_status":p_status,"procurement_date":str(p_date),
+                        "materials_source":p_source,"quality_check_status":p_qc,
+                        "notes":p_notes,"updated_by":updated_by,"updated_at":ts
+                    }])], ignore_index=True)
+                    save_table("procurement")
+                    ns = "Procured" if p_status == "Completed" else order["current_status"]
+                    prev = order["current_status"]
+                    update_order_status(oid, ns)
+                    add_log(oid,"STATUS_CHANGE",prev,ns,updated_by,f"Procurement: {p_status}")
+                    st.success(f"✅ Saved! Order status → **{ns}**")
+                    st.rerun()
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+    # ── Dispatch ──
+    with tab2:
+        st.markdown('<div class="form-card" style="max-width:720px;">'
+                    '<div class="form-card-header"><div class="form-card-title">Dispatch Details</div></div>'
+                    '<div class="form-card-body">', unsafe_allow_html=True)
+        with st.form("disp_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                d_date    = st.date_input("Dispatch Date")
+                d_courier = st.text_input("Courier / Transporter *", placeholder="e.g. BlueDart, DTDC")
+                d_vehicle = st.text_input("Vehicle Number", placeholder="e.g. DL01AB1234")
+            with c2:
+                d_driver  = st.text_input("Driver Contact", placeholder="e.g. 9111222333")
+                d_track   = st.text_input("Tracking Number", placeholder="e.g. BD123456789")
+                d_expd    = st.date_input("Expected Delivery")
+            sv = st.form_submit_button("✅ Save Dispatch Update", type="primary")
+            if sv:
+                if not updated_by:
+                    st.error("Enter your name above the tabs first.")
+                else:
+                    ts = now_ist()
+                    D["dispatch"] = pd.concat([D["dispatch"], pd.DataFrame([{
+                        "id":str(len(D["dispatch"])+1),"order_id":oid,
+                        "dispatch_date":str(d_date),"courier_name":d_courier,
+                        "vehicle_number":d_vehicle,"driver_contact":d_driver,
+                        "tracking_number":d_track,"expected_delivery_date":str(d_expd),
+                        "updated_by":updated_by,"updated_at":ts
+                    }])], ignore_index=True)
+                    save_table("dispatch")
+                    prev = order["current_status"]
+                    update_order_status(oid, "Dispatched")
+                    add_log(oid,"STATUS_CHANGE",prev,"Dispatched",updated_by,f"Dispatched via {d_courier}")
+                    st.success("✅ Dispatch saved! Status → **Dispatched**")
+                    st.rerun()
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+    # ── Delivery ──
+    with tab3:
+        st.markdown('<div class="form-card" style="max-width:720px;">'
+                    '<div class="form-card-header"><div class="form-card-title">Delivery Confirmation</div></div>'
+                    '<div class="form-card-body">', unsafe_allow_html=True)
+        with st.form("del_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                de_status = st.selectbox("Delivery Status *", ["","Delivered","Partial","Failed","Rescheduled"])
+                de_date   = st.date_input("Delivery Date")
+                de_recv   = st.text_input("Receiver Name", placeholder="Person who received goods")
+            with c2:
+                de_qty = st.number_input("Delivered Quantity", min_value=0)
+                de_ch  = st.text_input("Challan Number", placeholder="e.g. CH-EDU-001")
+            st.markdown("**Delivery Proof Files** *(photos, PDFs)*")
+            del_f = st.file_uploader("Upload", accept_multiple_files=True, key="dlf", label_visibility="collapsed")
+            st.markdown("**Challan Documents**")
+            ch_f  = st.file_uploader("Upload", accept_multiple_files=True, key="chf", label_visibility="collapsed")
+            sv = st.form_submit_button("✅ Save Delivery Update", type="primary")
+            if sv:
+                if not updated_by:
+                    st.error("Enter your name above the tabs first.")
+                else:
+                    ts = now_ist()
+                    D["delivery"] = pd.concat([D["delivery"], pd.DataFrame([{
+                        "id":str(len(D["delivery"])+1),"order_id":oid,
+                        "delivery_status":de_status,"delivery_date":str(de_date),
+                        "receiver_name":de_recv,"delivered_quantity":str(de_qty),
+                        "challan_number":de_ch,
+                        "delivery_files":f"{len(del_f or [])} file(s)",
+                        "challan_files":f"{len(ch_f or [])} file(s)",
+                        "updated_by":updated_by,"updated_at":ts
+                    }])], ignore_index=True)
+                    save_table("delivery")
+                    ns = "Delivered" if de_status == "Delivered" else order["current_status"]
+                    prev = order["current_status"]
+                    update_order_status(oid, ns)
+                    add_log(oid,"STATUS_CHANGE",prev,ns,updated_by,
+                            f"Delivery: {de_status} | {len(del_f or [])+len(ch_f or [])} files")
+                    st.success(f"✅ Delivery saved! Status → **{ns}**")
+                    st.rerun()
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+    # ── Invoice ──
+    with tab4:
+        st.markdown('<div class="form-card" style="max-width:720px;">'
+                    '<div class="form-card-header"><div class="form-card-title">Invoice &amp; Payment Details</div></div>'
+                    '<div class="form-card-body">', unsafe_allow_html=True)
+        with st.form("inv_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                i_num    = st.text_input("Invoice Number", placeholder="e.g. INV-2026-0001")
+                i_date   = st.date_input("Invoice Date")
+                i_amount = st.number_input("Invoice Amount (₹)", min_value=0)
+                i_pstat  = st.selectbox("Payment Status *", ["","Pending","Approved","Completed"])
+            with c2:
+                i_pmode  = st.selectbox("Payment Mode", ["","NEFT","RTGS","Cheque","DD","Online","Cash"])
+                i_txn    = st.text_input("Transaction Reference", placeholder="TXN or UTR number")
+                i_pdate  = st.date_input("Payment Date")
+            st.markdown("**Invoice Documents** *(PDF, Excel, scanned copies)*")
+            inv_f = st.file_uploader("Upload", accept_multiple_files=True, key="ivf", label_visibility="collapsed")
+            sv = st.form_submit_button("✅ Save Invoice & Payment", type="primary")
+            if sv:
+                if not updated_by:
+                    st.error("Enter your name above the tabs first.")
+                else:
+                    ts = now_ist()
+                    D["invoices"] = pd.concat([D["invoices"], pd.DataFrame([{
+                        "id":str(len(D["invoices"])+1),"order_id":oid,
+                        "invoice_number":i_num,"invoice_date":str(i_date),
+                        "invoice_amount":str(i_amount),"payment_status":i_pstat,
+                        "payment_date":str(i_pdate),"payment_mode":i_pmode,
+                        "transaction_reference":i_txn,
+                        "invoice_files":f"{len(inv_f or [])} file(s)",
+                        "updated_by":updated_by,"updated_at":ts
+                    }])], ignore_index=True)
+                    save_table("invoices")
+                    ns = "Paid" if i_pstat == "Completed" else "Invoiced"
+                    prev = order["current_status"]
+                    update_order_status(oid, ns)
+                    add_log(oid,"STATUS_CHANGE",prev,ns,updated_by,
+                            f"Invoice {i_num} | {i_pstat} | {len(inv_f or [])} files")
+                    st.success(f"✅ Invoice saved! Status → **{ns}**")
+                    st.rerun()
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+    show_footer()
+
+# ══════════════════════════════════════════════════════
+# ORDER DETAILS
+# ══════════════════════════════════════════════════════
+def page_order_details():
+    topbar("🔍 Order Details", "Full order information, timeline and activity log")
+    D   = st.session_state.data
+    pad = "padding:0 28px;"
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
+
+    opts = ["— Select an order —"] + [
+        f"{r['order_id']}  ·  {r['po_number']}  ·  {r['current_status']}"
+        for _, r in D["orders"].iterrows()
+    ]
+    sel = st.selectbox("Select Order", opts, key="od_sel")
+    if sel == "— Select an order —":
+        st.info("👆 Select an order above to view its complete details and history.")
+        st.markdown('</div>', unsafe_allow_html=True); show_footer(); return
+
+    oid   = sel.split("  ·  ")[0].strip()
+    order = get_order(oid)
+    s     = order["current_status"]
+
+    # ── Header card ──
+    st.markdown(f"""
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+                padding:22px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
             <div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
                     {cobadge(order['company'])}
                     <span style="font-size:18px;font-weight:800;color:#0f172a;">{order['order_id']}</span>
                 </div>
-                <div style="font-size:13px;color:#64748b;">{order['po_number']} · {order['govt_department']}</div>
+                <div style="font-size:13px;color:#64748b;">
+                    {order['po_number']} &nbsp;·&nbsp; {order['govt_department']}
+                </div>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;">
-                {sbadge(s)}
-                {pbadge(order['priority'])}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                {sbadge(s)} {pbadge(order['priority'])}
             </div>
         </div>
-        <div style="margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
-            <div><div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Contact</div><div style="font-size:13px;font-weight:600;">{order['contact_person']}</div></div>
-            <div><div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Phone</div><div style="font-size:13px;font-weight:600;">{order['contact_phone']}</div></div>
-            <div><div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Quantity</div><div style="font-size:13px;font-weight:600;">{order['quantity']}</div></div>
-            <div><div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Total Value</div><div style="font-size:16px;font-weight:800;color:#0f172a;">₹{float(order['total_value']):,.0f}</div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+                    gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid #f1f5f9;">
+            <div><div class="info-lbl">Contact</div><div class="info-val">{order['contact_person']}</div></div>
+            <div><div class="info-lbl">Phone</div><div class="info-val">{order['contact_phone']}</div></div>
+            <div><div class="info-lbl">Quantity</div><div class="info-val">{order['quantity']}</div></div>
+            <div><div class="info-lbl">Assigned To</div><div class="info-val">{order['assigned_company'] or '—'}</div></div>
+            <div><div class="info-lbl">Total Value</div>
+                 <div class="info-val" style="font-size:17px;color:#0f172a;font-weight:800;">
+                     ₹{float(order['total_value']):,.0f}</div></div>
         </div>
-        <div style="margin-top:14px;padding:10px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
-            <span style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;">Description: </span>
+        <div style="margin-top:14px;background:#f8fafc;border-radius:7px;
+                    border:1px solid #e2e8f0;padding:11px 14px;">
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;
+                         color:#64748b;letter-spacing:0.5px;">Description: </span>
             <span style="font-size:13px;color:#1e293b;">{order['item_description']}</span>
         </div>
     </div>
@@ -1117,163 +1253,206 @@ def page_order_details():
 
     # ── Pipeline stepper ──
     cur_idx = STATUSES.index(s) if s in STATUSES else 0
-    step_html = '<div class="step-bar">'
+    step_html = '<div class="stepper">'
     for i, step in enumerate(STATUSES):
-        done  = i <= cur_idx
-        nc    = "step-done" if done else "step-pending"
-        lc    = STATUS_FG.get(step,"#94a3b8") if done else "#94a3b8"
-        step_html += f'<div style="display:flex;flex-direction:column;align-items:center;">'
-        step_html += f'<div class="step-node {nc}">{STATUS_EMOJI.get(step,"")}</div>'
-        step_html += f'<div class="step-label" style="color:{lc};">{step}</div></div>'
-        if i < len(STATUSES)-1:
-            lclass = "step-line-d" if i < cur_idx else "step-line-p"
-            step_html += f'<div class="{lclass}" style="margin-bottom:18px;"></div>'
-    step_html += '</div>'
+        if i < cur_idx:
+            nc = "step-done"; lc = "#1d4ed8"
+        elif i == cur_idx:
+            nc = "step-current"; lc = "#1d4ed8"
+        else:
+            nc = "step-pending"; lc = "#94a3b8"
+        step_html += f"""<div class="step-node">
+            <div class="step-circle {nc}">{STATUS_EMOJI.get(step,"")}</div>
+            <div class="step-lbl" style="color:{lc};">{step}</div>
+        </div>"""
+        if i < len(STATUSES) - 1:
+            lc2 = "step-line-done" if i < cur_idx else "step-line-pending"
+            step_html += f'<div class="step-line {lc2}"></div>'
+    step_html += "</div>"
     st.markdown(step_html, unsafe_allow_html=True)
 
-    # ── Sub-table tabs ──
-    t1,t2,t3,t4,t5 = st.tabs(["🔧 Procurement","🚚 Dispatch","📦 Delivery","💰 Invoice","📋 Activity"])
-
-    def show_record(table, oid):
-        rows = D[table][D[table]["order_id"]==oid]
+    # ── Sub-record tabs ──
+    def show_record(table, oid_filter):
+        rows = D[table][D[table]["order_id"] == oid_filter]
         if len(rows) == 0:
             st.info("No data recorded yet for this stage.")
             return
         row = rows.iloc[-1]
-        cols_per_row = 3
-        items = [(c.replace("_"," ").title(), str(row[c])) for c in row.index if c not in ["id","order_id"] and str(row[c]) not in ["","nan"]]
-        for i in range(0, len(items), cols_per_row):
-            chunk = items[i:i+cols_per_row]
-            cs = st.columns(cols_per_row)
-            for col,(label,val) in zip(cs,chunk):
+        items = [(c.replace("_"," ").title(), str(row[c]))
+                 for c in row.index
+                 if c not in ["id","order_id"] and str(row[c]) not in ["","nan"]]
+        for i in range(0, len(items), 3):
+            chunk = items[i:i+3]
+            cs    = st.columns(3)
+            for col, (lbl, val) in zip(cs, chunk):
                 with col:
                     st.markdown(f"""
-                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:10px 14px;">
-                        <div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin-bottom:4px;">{label}</div>
-                        <div style="font-size:13px;font-weight:600;color:#0f172a;">{val}</div>
+                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+                                padding:11px 14px;margin-bottom:10px;">
+                        <div class="info-lbl">{lbl}</div>
+                        <div class="info-val">{val}</div>
                     </div>""", unsafe_allow_html=True)
-            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
+    t1,t2,t3,t4,t5 = st.tabs(["🔧 Procurement","🚚 Dispatch","📦 Delivery","💰 Invoice","📋 Activity"])
     with t1: show_record("procurement", oid)
     with t2: show_record("dispatch",    oid)
     with t3: show_record("delivery",    oid)
     with t4: show_record("invoices",    oid)
     with t5:
         logs = D["activity_log"][D["activity_log"]["order_id"]==oid].copy().iloc[::-1]
-        if len(logs)==0:
+        if len(logs) == 0:
             st.info("No activity recorded yet.")
-        for _,log in logs.iterrows():
-            prev = log.get("previous_status","")
-            ns   = log.get("new_status","")
-            arrow= f' <span style="color:#94a3b8;">→</span> {sbadge(ns)}' if ns and ns!="nan" else ""
-            prev_b = sbadge(prev) if prev and prev not in ["—","nan",""] else f'<span style="color:#94a3b8;">—</span>'
+        for _, log in logs.iterrows():
+            prev = log.get("previous_status",""); ns_l = log.get("new_status","")
+            prev_b = sbadge(prev) if prev and prev not in ["—","nan",""] else '<span style="color:#94a3b8">—</span>'
+            ns_b   = ("&nbsp;→&nbsp;" + sbadge(ns_l)) if ns_l and ns_l not in ["nan",""] else ""
             st.markdown(f"""
-            <div class="log-entry">
+            <div class="log-row">
                 <div class="log-dot"></div>
                 <div style="flex:1;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                        <div>
-                            <span style="font-size:12px;font-weight:700;background:#f1f5f9;padding:2px 8px;border-radius:4px;">{log['action_type']}</span>
-                            &nbsp; {prev_b}{arrow}
+                    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                            <span style="font-size:11.5px;font-weight:700;background:#f1f5f9;
+                                         padding:2px 8px;border-radius:5px;">{log['action_type']}</span>
+                            {prev_b}{ns_b}
                         </div>
                         <span style="font-size:11px;color:#94a3b8;">{log['performed_at']}</span>
                     </div>
-                    <div style="font-size:12.5px;color:#374151;margin-top:5px;">{log['details']} — by <b>{log['performed_by']}</b></div>
+                    <div style="font-size:12.5px;color:#374151;margin-top:5px;">
+                        {log['details']} — <b>{log['performed_by']}</b>
+                    </div>
                 </div>
             </div>""", unsafe_allow_html=True)
 
+    st.markdown('</div>', unsafe_allow_html=True)
     show_footer()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # ACTIVITY LOG
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def page_activity_log():
-    page_header("📋 Activity Log", "Complete audit trail of all order changes and status updates")
-    D    = st.session_state.data
+    topbar("📋 Activity Log", "Complete audit trail of all order changes and status updates")
+    D   = st.session_state.data
+    pad = "padding:0 28px;"
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
     logs = D["activity_log"].copy().iloc[::-1].reset_index(drop=True)
-    card_start(f"All Events", f"{len(logs)} total")
-    for _,log in logs.iterrows():
-        prev = log.get("previous_status",""); ns = log.get("new_status","")
-        prev_b = sbadge(prev) if prev and prev not in ["—","nan",""] else '<span style="color:#94a3b8;">—</span>'
-        ns_b   = sbadge(ns)   if ns   and ns   not in ["nan",""]     else ""
-        arrow  = ' → ' if ns_b else ""
+
+    st.markdown(f"""
+    <div class="tcard" style="margin-bottom:20px;">
+        <div class="tcard-header">
+            <div class="tcard-title">📋 All System Events</div>
+            <div class="tcard-badge">{len(logs)} events</div>
+        </div>
+        <div style="padding:16px;">
+    """, unsafe_allow_html=True)
+
+    for _, log in logs.iterrows():
+        prev = log.get("previous_status",""); ns_l = log.get("new_status","")
+        prev_b = sbadge(prev) if prev and prev not in ["—","nan",""] else '<span style="color:#94a3b8">—</span>'
+        ns_b   = ("&nbsp;→&nbsp;" + sbadge(ns_l)) if ns_l and ns_l not in ["nan",""] else ""
         st.markdown(f"""
-        <div class="log-entry">
+        <div class="log-row">
             <div class="log-dot"></div>
             <div style="flex:1;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                        <span style="font-size:12px;font-weight:700;background:#f1f5f9;padding:2px 8px;border-radius:4px;">{log['action_type']}</span>
+                <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+                        <span style="font-size:11.5px;font-weight:700;background:#f1f5f9;
+                                     padding:2px 8px;border-radius:5px;">{log['action_type']}</span>
                         <span style="font-size:12px;font-weight:700;color:#1d4ed8;">{log['order_id']}</span>
-                        {prev_b}{arrow}{ns_b}
+                        {prev_b}{ns_b}
                     </div>
-                    <span style="font-size:11px;color:#94a3b8;">{log['performed_at']}</span>
+                    <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">{log['performed_at']}</span>
                 </div>
-                <div style="font-size:12.5px;color:#374151;margin-top:5px;">{log['details']} — by <b>{log['performed_by']}</b></div>
+                <div style="font-size:12.5px;color:#374151;margin-top:5px;">
+                    {log['details']} — <b>{log['performed_by']}</b>
+                </div>
             </div>
         </div>""", unsafe_allow_html=True)
-    card_end()
+
+    st.markdown('</div></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     show_footer()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # REPORTS
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def page_reports():
-    page_header("📈 Reports", "Financial summaries and order analytics by company and status")
+    topbar("📈 Reports", "Financial summaries and order analytics by company and status")
     D      = st.session_state.data
     orders = D["orders"].copy()
     orders["total_value"] = orders["total_value"].astype(float)
+    pad = "padding:0 28px;"
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
 
-    c1,c2 = st.columns(2)
-
+    c1, c2 = st.columns(2)
     with c1:
-        card_start("🏢 Orders by Company")
+        st.markdown("""
+        <div class="tcard" style="margin-bottom:20px;">
+            <div class="tcard-header"><div class="tcard-title">🏢 Orders by Company</div></div>
+            <div style="padding:18px;">
+        """, unsafe_allow_html=True)
         for co in COMPANIES:
             rows = orders[orders["company"]==co]
             cnt  = len(rows); val = rows["total_value"].sum()
-            pct  = cnt/max(len(orders),1)
+            pct  = int(cnt / max(len(orders),1) * 100)
             fg   = CO_FG.get(co,"#64748b"); bg = CO_BG.get(co,"#f1f5f9")
             st.markdown(f"""
-            <div style="margin-bottom:14px;">
-                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <div style="margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
                     <span class="co-tag" style="background:{bg};color:{fg};">{co}</span>
-                    <span style="font-size:12px;font-weight:700;color:{fg};">{cnt} orders · ₹{val/100000:.1f}L</span>
+                    <span style="font-size:12.5px;font-weight:700;color:{fg};">
+                        {cnt} orders · ₹{val/100000:.1f}L
+                    </span>
                 </div>
                 <div style="background:#f1f5f9;border-radius:4px;height:6px;">
-                    <div style="width:{int(pct*100)}%;background:{fg};border-radius:4px;height:6px;"></div>
+                    <div style="width:{pct}%;background:{fg};border-radius:4px;height:6px;"></div>
                 </div>
             </div>""", unsafe_allow_html=True)
-        card_end()
+        st.markdown('</div></div>', unsafe_allow_html=True)
 
     with c2:
-        card_start("📊 Orders by Status")
+        st.markdown("""
+        <div class="tcard" style="margin-bottom:20px;">
+            <div class="tcard-header"><div class="tcard-title">📊 Orders by Status</div></div>
+            <div style="padding:18px;">
+        """, unsafe_allow_html=True)
         for status in STATUSES:
             cnt = len(orders[orders["current_status"]==status])
-            pct = cnt/max(len(orders),1)
+            pct = int(cnt / max(len(orders),1) * 100)
             fg  = STATUS_FG.get(status,"#64748b"); bg = STATUS_BG.get(status,"#f1f5f9")
             st.markdown(f"""
             <div style="margin-bottom:14px;">
                 <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                    <span class="badge" style="background:{bg};color:{fg};">{STATUS_EMOJI.get(status,"")} {status}</span>
+                    <span class="badge" style="background:{bg};color:{fg};">
+                        {STATUS_EMOJI.get(status,"")} {status}
+                    </span>
                     <span style="font-size:13px;font-weight:700;color:{fg};">{cnt}</span>
                 </div>
-                <div style="background:#f1f5f9;border-radius:4px;height:6px;">
-                    <div style="width:{int(pct*100)}%;background:{fg};border-radius:4px;height:6px;"></div>
+                <div style="background:#f1f5f9;border-radius:4px;height:5px;">
+                    <div style="width:{pct}%;background:{fg};border-radius:4px;height:5px;"></div>
                 </div>
             </div>""", unsafe_allow_html=True)
-        card_end()
+        st.markdown('</div></div>', unsafe_allow_html=True)
 
     # Financial table
-    card_start("💵 Financial Summary")
-    TH = "padding:9px 14px;background:#f8fafc;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left;"
-    TD = "padding:11px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px;color:#1e293b;"
-    rows_html = ""
-    for i,(_,r) in enumerate(orders.iterrows()):
-        bg  = "#fff" if i%2==0 else "#fafbfc"
-        tv  = float(r["total_value"])
-        paid= f'<span style="color:#16a34a;font-weight:700;">₹{tv:,.0f}</span>' if r["current_status"]=="Paid" else '<span style="color:#94a3b8;">—</span>'
-        out = '<span style="color:#94a3b8;">—</span>' if r["current_status"]=="Paid" else f'<span style="color:#d97706;font-weight:700;">₹{tv:,.0f}</span>'
-        rows_html += f"""<tr style="background:{bg}">
+    st.markdown("""
+    <div class="tcard" style="margin-bottom:20px;">
+        <div class="tcard-header"><div class="tcard-title">💵 Financial Summary</div></div>
+    """, unsafe_allow_html=True)
+    TH = ("padding:10px 16px;background:#f8fafc;font-size:10.5px;font-weight:700;"
+          "text-transform:uppercase;letter-spacing:0.5px;color:#475569;"
+          "border-bottom:2px solid #e2e8f0;text-align:left;")
+    TD = "padding:12px 16px;border-bottom:1px solid #f1f5f9;font-size:12.5px;color:#1e293b;"
+    rows_h = ""
+    total_outstanding = 0.0
+    for i,(_, r) in enumerate(orders.iterrows()):
+        bg = "#fff" if i%2==0 else "#fafbfc"
+        tv = float(r["total_value"])
+        paid = f'<span style="color:#15803d;font-weight:700;">₹{tv:,.0f}</span>' if r["current_status"]=="Paid" else "—"
+        out  = "—" if r["current_status"]=="Paid" else f'<span style="color:#b45309;font-weight:700;">₹{tv:,.0f}</span>'
+        if r["current_status"] != "Paid":
+            total_outstanding += tv
+        rows_h += f"""<tr style="background:{bg}">
             <td style="{TD}font-size:11.5px;color:#64748b;">{r['order_id']}</td>
             <td style="{TD}">{cobadge(r['company'])}</td>
             <td style="{TD}">{r['govt_department']}</td>
@@ -1287,100 +1466,127 @@ def page_reports():
     <table style="width:100%;border-collapse:collapse;">
         <thead><tr>
             <th style="{TH}">Order ID</th><th style="{TH}">Company</th>
-            <th style="{TH}">Department</th><th style="{TH}">Total Value</th>
+            <th style="{TH}">Department</th><th style="{TH}">Order Value</th>
             <th style="{TH}">Status</th><th style="{TH}">Paid</th><th style="{TH}">Outstanding</th>
         </tr></thead>
-        <tbody>{rows_html}</tbody>
-    </table></div>""", unsafe_allow_html=True)
-    card_end()
+        <tbody>{rows_h}</tbody>
+    </table></div>
+    <div style="padding:12px 16px;background:#f8fafc;border-top:1px solid #e2e8f0;
+                display:flex;justify-content:space-between;font-size:13px;font-weight:700;">
+        <span style="color:#64748b;">Total Outstanding</span>
+        <span style="color:#b45309;">₹{total_outstanding:,.0f}</span>
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
     show_footer()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 # ADMIN
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
 def page_admin():
-    page_header("⚙️ Admin Panel", "Data export, database stats, user management")
-    D = st.session_state.data
+    topbar("⚙️ Admin Panel", "Data export, system statistics, user management")
+    D   = st.session_state.data
+    pad = "padding:0 28px;"
+    st.markdown(f'<div style="{pad}">', unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#1e40af;line-height:1.9;">
-        ✅ <b>Auto-Save</b> — Every change saves instantly to CSV files on the server.<br>
-        📥 <b>Export CSV</b> — Downloads directly to your computer's Downloads folder.<br>
-        🔄 <b>Status</b> — Updates reflect immediately everywhere after saving.
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;
+                padding:14px 18px;margin-bottom:20px;font-size:13px;color:#1e40af;line-height:1.8;">
+        ✅ <b>Auto-Save</b> — Every update saves instantly to CSV files on the server.<br>
+        📥 <b>Export CSV</b> — Download individual or all tables to your computer.<br>
+        🔄 <b>Reset</b> — Restore to sample seed data if needed (danger zone).
     </div>""", unsafe_allow_html=True)
 
-    card_start("📥 Export Data to CSV")
+    # Export
+    st.markdown("""
+    <div class="tcard" style="margin-bottom:20px;">
+        <div class="tcard-header"><div class="tcard-title">📥 Export Data</div></div>
+        <div style="padding:18px;">
+    """, unsafe_allow_html=True)
     tables = ["orders","procurement","dispatch","delivery","invoices","activity_log"]
-    cols   = st.columns(3)
-    for i,t in enumerate(tables):
-        with cols[i%3]:
+    c = st.columns(3)
+    for i, t in enumerate(tables):
+        with c[i % 3]:
             csv = D[t].to_csv(index=False).encode("utf-8")
-            st.download_button(f"📄 {t}  ({len(D[t])} rows)", csv,
+            st.download_button(f"📄 {t} ({len(D[t])} rows)", csv,
                                f"supply_chain_{t}_{now_ist()[:10]}.csv","text/csv",
                                use_container_width=True, key=f"dl_{t}")
-    st.markdown("<br>",unsafe_allow_html=True)
-    all_csv = "\n\n".join([f"=== {t.upper()} ===\n" + D[t].to_csv(index=False) for t in tables])
+    sp(8)
+    all_csv = "\n\n".join([f"=== {t.upper()} ===\n"+D[t].to_csv(index=False) for t in tables])
     st.download_button("📦 Export ALL Tables (Single File)", all_csv.encode(),
-                       f"supply_chain_full_{now_ist()[:10]}.csv", "text/csv",
+                       f"supply_chain_full_{now_ist()[:10]}.csv","text/csv",
                        use_container_width=True, key="dl_all", type="primary")
-    card_end()
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
-    card_start("⚙️ Database Statistics")
-    cols2 = st.columns(6)
-    for i,t in enumerate(tables):
-        with cols2[i]:
-            st.markdown(f"""
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #1d4ed8;
-                        border-radius:8px;padding:12px 14px;text-align:center;">
-                <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">{t}</div>
-                <div style="font-size:22px;font-weight:800;color:#1d4ed8;margin-top:6px;">{len(D[t])}</div>
-                <div style="font-size:10px;color:#94a3b8;">rows</div>
-            </div>""", unsafe_allow_html=True)
-    card_end()
+    # Stats
+    st.markdown("""
+    <div class="tcard" style="margin-bottom:20px;">
+        <div class="tcard-header"><div class="tcard-title">⚙️ Database Statistics</div></div>
+        <div style="padding:18px;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
+    """, unsafe_allow_html=True)
+    for t in tables:
+        st.markdown(f"""
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #1d4ed8;
+                    border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">{t}</div>
+            <div style="font-size:22px;font-weight:800;color:#1d4ed8;margin-top:6px;">{len(D[t])}</div>
+            <div style="font-size:10px;color:#94a3b8;">rows</div>
+        </div>""", unsafe_allow_html=True)
+    st.markdown('</div></div>', unsafe_allow_html=True)
 
-    card_start("👥 Users & Role Permissions")
+    # Users
+    st.markdown("""
+    <div class="tcard" style="margin-bottom:20px;">
+        <div class="tcard-header"><div class="tcard-title">👥 User Accounts &amp; Roles</div></div>
+        <div style="overflow-x:auto;">
+    """, unsafe_allow_html=True)
+    TH = ("padding:10px 16px;background:#f8fafc;font-size:10.5px;font-weight:700;"
+          "text-transform:uppercase;letter-spacing:0.5px;color:#475569;"
+          "border-bottom:2px solid #e2e8f0;text-align:left;")
+    TD = "padding:12px 16px;border-bottom:1px solid #f1f5f9;font-size:12.5px;"
     ROLE_DESC = {
-        "Admin":   "Full access — create, update, reports, admin panel",
-        "Manager": "Create orders, update all stages, view reports",
-        "Staff":   "Update orders only — procurement / dispatch / delivery / invoice",
-        "Viewer":  "Read-only — dashboard, order details, activity log",
+        "Admin":"Full access — create, update, reports, admin panel",
+        "Manager":"Create orders, update all stages, view reports",
+        "Staff":"Update existing orders only — all stages",
+        "Viewer":"Read-only — dashboard, details, activity log",
     }
-    TH = "padding:9px 14px;background:#f8fafc;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left;"
-    TD = "padding:11px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px;color:#1e293b;"
-    rows_html = ""
+    rows_h = ""
     for i,(u,v) in enumerate(USERS.items()):
         bg = "#fff" if i%2==0 else "#fafbfc"
         rc = ROLE_COLOR.get(v['role'],"#64748b"); rb = ROLE_BG.get(v['role'],"#f1f5f9")
-        rows_html += f"""<tr style="background:{bg}">
+        rows_h += f"""<tr style="background:{bg}">
             <td style="{TD}font-weight:700;font-family:monospace;">{u}</td>
             <td style="{TD}">{v['name']}</td>
             <td style="{TD}"><span class="badge" style="background:{rb};color:{rc};">{v['role']}</span></td>
-            <td style="{TD}font-size:12px;color:#64748b;">{ROLE_DESC.get(v['role'],'')}</td>
+            <td style="{TD}color:#64748b;font-size:12px;">{ROLE_DESC.get(v['role'],'')}</td>
         </tr>"""
     st.markdown(f"""
     <table style="width:100%;border-collapse:collapse;">
         <thead><tr>
-            <th style="{TH}">Username</th><th style="{TH}">Name</th>
-            <th style="{TH}">Role</th><th style="{TH}">Access Level</th>
-        </tr></thead>
-        <tbody>{rows_html}</tbody>
-    </table>""", unsafe_allow_html=True)
-    card_end()
+            <th style="{TH}">Username</th><th style="{TH}">Full Name</th>
+            <th style="{TH}">Role</th><th style="{TH}">Permissions</th>
+        </tr></thead><tbody>{rows_h}</tbody>
+    </table>
+    </div></div>""", unsafe_allow_html=True)
 
-    with st.expander("⚠️ Danger Zone — Reset Data"):
-        st.warning("This will permanently delete all data and restore sample records.")
-        if st.button("🗑 Reset All Data to Sample Data", type="primary", key="reset_data"):
-            for key,df in SEED.items():
-                df.astype(str).fillna("").to_csv(FILES[key],index=False)
+    # Danger zone
+    with st.expander("⚠️ Danger Zone — Reset All Data"):
+        st.warning("This permanently deletes all data and restores sample records. This action cannot be undone.")
+        if st.button("🗑 Reset to Sample Data", type="primary"):
+            for key, df in SEED.items():
+                df.astype(str).fillna("").to_csv(FILES[key], index=False)
             st.session_state.data = load_data()
-            st.success("✅ Data has been reset to sample records.")
+            st.success("✅ Data reset to sample records.")
             st.rerun()
 
+    st.markdown('</div>', unsafe_allow_html=True)
     show_footer()
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ROUTER — main entry point
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════
+# ROUTER
+# ══════════════════════════════════════════════════════
 def main():
     if not st.session_state.logged_in:
         login_page()
@@ -1388,25 +1594,21 @@ def main():
 
     render_sidebar()
 
-    menu = st.session_state.menu
-    PAGES = {
-        "Dashboard":    page_dashboard,
-        "New Order":    page_new_order,
-        "Update Order": page_update_order,
-        "Order Details":page_order_details,
-        "Activity Log": page_activity_log,
-        "Reports":      page_reports,
-        "Admin":        page_admin,
-    }
-
-    # Guard: if user's role doesn't have access to current menu, redirect to Dashboard
     allowed = ROLE_MENUS.get(st.session_state.role, [])
-    if menu not in allowed:
+    if st.session_state.menu not in allowed:
         st.session_state.menu = "Dashboard"
         st.rerun()
 
-    if menu in PAGES:
-        PAGES[menu]()
+    PAGES = {
+        "Dashboard":     page_dashboard,
+        "New Order":     page_new_order,
+        "Update Order":  page_update_order,
+        "Order Details": page_order_details,
+        "Activity Log":  page_activity_log,
+        "Reports":       page_reports,
+        "Admin":         page_admin,
+    }
+    PAGES[st.session_state.menu]()
 
 if __name__ == "__main__":
     main()
