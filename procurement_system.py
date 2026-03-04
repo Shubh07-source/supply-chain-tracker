@@ -513,106 +513,139 @@ def show_footer():
 # LOGIN PAGE
 # ═══════════════════════════════════════════════════════════════════════════════
 def login_page():
-    # Override global background + hide sidebar entirely on login
     st.markdown("""
     <style>
-    .stApp, html, body { background: linear-gradient(135deg,#0c1426 0%,#1a3a6b 60%,#0c1426 100%) !important; }
-    [data-testid="stSidebar"]          { display: none !important; }
-    .block-container                   { padding: 60px 24px 0 24px !important; }
+    /* ── Full page dark gradient background ── */
+    .stApp, html, body {
+        background: linear-gradient(135deg, #0c1426 0%, #1a3a6b 55%, #0c1426 100%) !important;
+    }
 
-    /* Force all form inputs white background + dark text on login page */
-    .stTextInput > div > div > input {
-        background: #fff !important;
-        color: #0f172a !important;
+    /* ── Hide sidebar on login ── */
+    [data-testid="stSidebar"] { display: none !important; }
+
+    /* ── Center column gets white card treatment ── */
+    .block-container {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* ── The login card — applied to stForm ── */
+    [data-testid="stForm"] {
+        background: #ffffff !important;
+        border-radius: 0 0 16px 16px !important;
+        padding: 28px 32px 36px 32px !important;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5) !important;
+        border: none !important;
+    }
+
+    /* ── Input fields: white bg, dark text, always ── */
+    [data-testid="stForm"] input[type="text"],
+    [data-testid="stForm"] input[type="password"],
+    [data-testid="stForm"] input {
+        background-color: #f8fafc !important;
+        color: #111827 !important;
+        -webkit-text-fill-color: #111827 !important;
         border: 1.5px solid #d1d5db !important;
         border-radius: 8px !important;
         font-size: 14px !important;
-        padding: 10px 14px !important;
-        height: 46px !important;
+        height: 48px !important;
+        padding: 0 14px !important;
+        caret-color: #111827 !important;
     }
-    .stTextInput > div > div > input:focus {
+    [data-testid="stForm"] input[type="text"]:focus,
+    [data-testid="stForm"] input[type="password"]:focus {
         border-color: #1d4ed8 !important;
-        box-shadow: 0 0 0 3px rgba(29,78,216,0.15) !important;
+        box-shadow: 0 0 0 3px rgba(29,78,216,0.12) !important;
+        background-color: #ffffff !important;
         outline: none !important;
     }
-    .stTextInput label {
+    /* placeholder text */
+    [data-testid="stForm"] input::placeholder {
+        color: #9ca3af !important;
+        -webkit-text-fill-color: #9ca3af !important;
+    }
+    /* Label text */
+    [data-testid="stForm"] label {
         color: #374151 !important;
         font-size: 13px !important;
         font-weight: 600 !important;
+        margin-bottom: 6px !important;
     }
-    /* Sign In button */
-    .stForm .stButton > button[kind="primary"] {
-        background: #1d4ed8 !important;
-        color: #fff !important;
+
+    /* ── Sign In button: red to match screenshot, full width ── */
+    [data-testid="stForm"] button[kind="primaryFormSubmit"],
+    [data-testid="stForm"] .stButton > button {
+        background: #dc2626 !important;
+        color: #ffffff !important;
         font-size: 15px !important;
         font-weight: 700 !important;
-        padding: 12px !important;
+        height: 50px !important;
         border-radius: 8px !important;
         border: none !important;
         width: 100% !important;
-        margin-top: 8px !important;
-        letter-spacing: 0.3px !important;
+        letter-spacing: 0.5px !important;
+        margin-top: 12px !important;
     }
-    .stForm .stButton > button[kind="primary"]:hover {
-        background: #1e40af !important;
+    [data-testid="stForm"] button[kind="primaryFormSubmit"]:hover,
+    [data-testid="stForm"] .stButton > button:hover {
+        background: #b91c1c !important;
     }
-    /* Error box */
-    .stAlert { border-radius: 8px !important; }
+
+    /* ── Error alert ── */
+    .stAlert { border-radius: 8px !important; margin-top: 8px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    _, mid, _ = st.columns([1, 1.1, 1])
+    # Use 3 columns to center the card — ratio gives ~420px wide card
+    _, mid, _ = st.columns([1, 1.15, 1])
     with mid:
-        # Single unified card — header + form all inside one white box
+        st.markdown("<div style='height:60px'></div>", unsafe_allow_html=True)
+
+        # ── Card top: branding (pure HTML, above the form) ──
         st.markdown("""
         <div style="
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 24px 80px rgba(0,0,0,0.45);
-            overflow: hidden;
+            border-radius: 16px 16px 0 0;
+            padding: 38px 32px 28px 32px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+            box-shadow: 0 -2px 0 0 #e2e8f0;
         ">
-            <!-- Card top: branding -->
-            <div style="
-                padding: 36px 40px 28px;
-                text-align: center;
-                border-bottom: 1px solid #f1f5f9;
-            ">
-                <div style="font-size: 48px; margin-bottom: 12px; line-height:1;">🏭</div>
-                <div style="font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1.3;">
-                    Supply Chain Tracking System
-                </div>
-                <div style="font-size: 13px; color: #64748b; margin-top: 8px; font-weight: 400;">
-                    Sign in with your credentials to continue
-                </div>
+            <div style="font-size:52px; line-height:1; margin-bottom:14px;">🏭</div>
+            <div style="font-size:22px; font-weight:800; color:#0f172a; line-height:1.35;">
+                Supply Chain Tracking System
             </div>
-            <!-- Card bottom padding start -->
-            <div style="padding: 28px 40px 36px;">
+            <div style="font-size:13px; color:#64748b; margin-top:10px; font-weight:400;">
+                Sign in with your credentials to continue
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
+        # ── Card bottom: the Streamlit form (styled as bottom half of card via CSS) ──
         with st.form("login_form", clear_on_submit=False):
-            username  = st.text_input("Username", placeholder="e.g. Admin")
-            password  = st.text_input("Password", type="password", placeholder="Enter your password")
+            st.text_input("Username", placeholder="Enter your username", key="li_user")
+            st.text_input("Password", type="password", placeholder="Enter your password", key="li_pass")
             st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
             submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
 
-            if submitted:
-                if username in USERS and USERS[username]["password"] == password:
-                    st.session_state.logged_in = True
-                    st.session_state.username  = username
-                    st.session_state.role      = USERS[username]["role"]
-                    st.session_state.user_name = USERS[username]["name"]
-                    st.session_state.menu      = "Dashboard"
-                    st.rerun()
-                else:
-                    st.error("⚠ Invalid username or password. Please try again.")
-
-        st.markdown("</div>", unsafe_allow_html=True)   # close card
+        if submitted:
+            u = st.session_state.get("li_user", "")
+            p = st.session_state.get("li_pass", "")
+            if u in USERS and USERS[u]["password"] == p:
+                st.session_state.logged_in = True
+                st.session_state.username  = u
+                st.session_state.role      = USERS[u]["role"]
+                st.session_state.user_name = USERS[u]["name"]
+                st.session_state.menu      = "Dashboard"
+                st.rerun()
+            else:
+                st.error("⚠ Invalid username or password. Please try again.")
 
         st.markdown("""
-        <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:20px;">
+        <p style="text-align:center; font-size:12px; color:#94a3b8; margin-top:18px;">
             Contact your administrator for login credentials.
-        </p>""", unsafe_allow_html=True)
+        </p>
+        """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SIDEBAR
