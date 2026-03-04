@@ -205,12 +205,11 @@ html, body, [class*="css"], .stApp {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 16px;
+    background: #ffffff;
+    padding: 16px 32px;
     border-bottom: 1px solid #e2e8f0;
-    margin-bottom: 24px;
-    background: #fff;
-    padding: 14px 32px;
-    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .ph-title { font-size: 20px; font-weight: 800; color: #0f172a; }
 .ph-right { display: flex; align-items: center; gap: 16px; }
@@ -311,23 +310,39 @@ html, body, [class*="css"], .stApp {
     font-weight: 700;
 }
 
-/* ── Form styling ── */
+/* ── Form styling — always white bg, always dark text ── */
 .stTextInput > div > div > input,
 .stTextArea  > div > div > textarea,
 .stSelectbox > div > div > div,
 .stNumberInput > div > div > input,
 .stDateInput > div > div > input {
     border-radius: 7px !important;
-    border: 1px solid #d1d5db !important;
+    border: 1.5px solid #d1d5db !important;
     font-size: 13px !important;
-    background: #fff !important;
+    background: #ffffff !important;
     color: #0f172a !important;
-    padding: 8px 12px !important;
+    padding: 9px 12px !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+.stTextInput > div > div > input::placeholder,
+.stTextArea  > div > div > textarea::placeholder {
+    color: #9ca3af !important;
+    -webkit-text-fill-color: #9ca3af !important;
 }
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
     border-color: #1d4ed8 !important;
     box-shadow: 0 0 0 3px rgba(29,78,216,0.1) !important;
+    outline: none !important;
+}
+/* Number / date inputs also white */
+.stNumberInput > div > div,
+.stDateInput   > div > div {
+    background: #ffffff !important;
+}
+.stSelectbox > div > div {
+    background: #ffffff !important;
+    color: #0f172a !important;
 }
 .stTextInput label, .stTextArea label, .stSelectbox label,
 .stNumberInput label, .stDateInput label, .stFileUploader label {
@@ -484,10 +499,11 @@ def page_header(title, subtitle=""):
             {sub_html}
         </div>
         <div class="ph-right">
-            <span class="ph-saved"><span class="ph-dot"></span> Auto-saved</span>
+            <span class="ph-saved"><span class="ph-dot"></span>&nbsp;Auto-saved</span>
             <span class="ph-date">{today}</span>
         </div>
     </div>
+    <div style="height:20px;background:#f0f4f8;"></div>
     """, unsafe_allow_html=True)
 
 def show_footer():
@@ -497,111 +513,106 @@ def show_footer():
 # LOGIN PAGE
 # ═══════════════════════════════════════════════════════════════════════════════
 def login_page():
+    # Override global background + hide sidebar entirely on login
     st.markdown("""
     <style>
-    .stApp { 
-        background: linear-gradient(135deg,#0c1426 0%,#1a3a6b 60%,#0c1426 100%) !important; 
-    }
+    .stApp, html, body { background: linear-gradient(135deg,#0c1426 0%,#1a3a6b 60%,#0c1426 100%) !important; }
+    [data-testid="stSidebar"]          { display: none !important; }
+    .block-container                   { padding: 60px 24px 0 24px !important; }
 
-    /* Hide sidebar on login */
-    [data-testid="stSidebar"] { display: none !important; }
-    section[data-testid="stSidebar"] + div .block-container { padding: 0 !important; }
-
-    /* 🔹 FIX: Make input text clearly visible */
-    .stTextInput input {
-        background: #ffffff !important;
+    /* Force all form inputs white background + dark text on login page */
+    .stTextInput > div > div > input {
+        background: #fff !important;
         color: #0f172a !important;
-        -webkit-text-fill-color: #0f172a !important;
-        opacity: 1 !important;
+        border: 1.5px solid #d1d5db !important;
         border-radius: 8px !important;
-        border: 1px solid #d1d5db !important;
-        padding: 10px 12px !important;
+        font-size: 14px !important;
+        padding: 10px 14px !important;
+        height: 46px !important;
     }
-
-    /* Fix placeholder visibility */
-    .stTextInput input::placeholder {
-        color: #64748b !important;
-        opacity: 1 !important;
+    .stTextInput > div > div > input:focus {
+        border-color: #1d4ed8 !important;
+        box-shadow: 0 0 0 3px rgba(29,78,216,0.15) !important;
+        outline: none !important;
     }
-
-    /* 🔹 FIX: Password eye alignment */
-    .stTextInput button {
-        background: #1f2937 !important;
-        border: none !important;
-        border-radius: 0 8px 8px 0 !important;
-        height: 42px !important;
-    }
-
-    /* Prevent width overlap issue */
-    div[data-baseweb="input"] {
-        width: 100% !important;
-    }
-
-    .stTextInput {
-        width: 100% !important;
-    }
-
-    .stTextInput > div {
-        width: 100% !important;
-    }
-
-    /* Login button */
-    .stForm button[kind="primary"] {
-        background: #ff4b4b !important;
-        border: none !important;
-        color: white !important;
+    .stTextInput label {
+        color: #374151 !important;
+        font-size: 13px !important;
         font-weight: 600 !important;
-        border-radius: 10px !important;
-        padding: 10px !important;
     }
+    /* Sign In button */
+    .stForm .stButton > button[kind="primary"] {
+        background: #1d4ed8 !important;
+        color: #fff !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        width: 100% !important;
+        margin-top: 8px !important;
+        letter-spacing: 0.3px !important;
+    }
+    .stForm .stButton > button[kind="primary"]:hover {
+        background: #1e40af !important;
+    }
+    /* Error box */
+    .stAlert { border-radius: 8px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    _, mid, _ = st.columns([1, 1.0, 1])
+    _, mid, _ = st.columns([1, 1.1, 1])
     with mid:
-        st.markdown("<br><br><br>", unsafe_allow_html=True)
-
+        # Single unified card — header + form all inside one white box
         st.markdown("""
-        <div style="background:#ffffff;border-radius:14px 14px 0 0;padding:36px 40px 24px;
-                    box-shadow:0 2px 0 #e2e8f0;text-align:center;">
-            <div style="font-size:44px;margin-bottom:10px;">🏭</div>
-            <div style="font-size:22px;font-weight:800;color:#0f172a;line-height:1.3;">
-                Supply Chain Tracking System
+        <div style="
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+            overflow: hidden;
+        ">
+            <!-- Card top: branding -->
+            <div style="
+                padding: 36px 40px 28px;
+                text-align: center;
+                border-bottom: 1px solid #f1f5f9;
+            ">
+                <div style="font-size: 48px; margin-bottom: 12px; line-height:1;">🏭</div>
+                <div style="font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1.3;">
+                    Supply Chain Tracking System
+                </div>
+                <div style="font-size: 13px; color: #64748b; margin-top: 8px; font-weight: 400;">
+                    Sign in with your credentials to continue
+                </div>
             </div>
-            <div style="font-size:13px;color:#64748b;margin-top:8px;">
-                Sign in with your credentials to continue
-            </div>
+            <!-- Card bottom padding start -->
+            <div style="padding: 28px 40px 36px;">
         </div>
         """, unsafe_allow_html=True)
 
-        with st.container():
-            st.markdown('<div style="background:#fff;border-radius:0 0 14px 14px;padding:8px 40px 36px;box-shadow:0 20px 60px rgba(0,0,0,0.35);margin-top:-8px;">', unsafe_allow_html=True)
+        with st.form("login_form", clear_on_submit=False):
+            username  = st.text_input("Username", placeholder="e.g. Admin")
+            password  = st.text_input("Password", type="password", placeholder="Enter your password")
+            st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
 
-            with st.form("login_form", clear_on_submit=False):
-                username = st.text_input("Username", placeholder="Enter your username")
-                password = st.text_input("Password", type="password", placeholder="Enter your password")
+            if submitted:
+                if username in USERS and USERS[username]["password"] == password:
+                    st.session_state.logged_in = True
+                    st.session_state.username  = username
+                    st.session_state.role      = USERS[username]["role"]
+                    st.session_state.user_name = USERS[username]["name"]
+                    st.session_state.menu      = "Dashboard"
+                    st.rerun()
+                else:
+                    st.error("⚠ Invalid username or password. Please try again.")
 
-                st.markdown("<br>", unsafe_allow_html=True)
-                submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
-
-                if submitted:
-                    if username in USERS and USERS[username]["password"] == password:
-                        st.session_state.logged_in = True
-                        st.session_state.username  = username
-                        st.session_state.role      = USERS[username]["role"]
-                        st.session_state.user_name = USERS[username]["name"]
-                        st.session_state.menu      = "Dashboard"
-                        st.rerun()
-                    else:
-                        st.error("⚠ Invalid username or password. Please try again.")
-
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)   # close card
 
         st.markdown("""
-        <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:16px;">
+        <p style="text-align:center;font-size:12px;color:#94a3b8;margin-top:20px;">
             Contact your administrator for login credentials.
-        </p>
-        """, unsafe_allow_html=True)
+        </p>""", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SIDEBAR
@@ -660,94 +671,120 @@ def page_dashboard():
     fil    = orders if cf == "All" else orders[orders["company"] == cf]
     tv     = fil["total_value"].astype(float).sum() if len(fil) else 0.0
 
+    # Content padding wrapper
+    st.markdown('<div style="padding:24px 32px 0 32px;">', unsafe_allow_html=True)
+
     # ── Metric cards ──
     metrics = [
-        ("TOTAL ORDERS",  str(len(fil)),                                                                          "#1d4ed8"),
-        ("PENDING",       str(len(fil[fil["current_status"]=="Pending"])),                                        "#d97706"),
-        ("IN TRANSIT",    str(len(fil[fil["current_status"].isin(["Procured","Dispatched"])])),                   "#7c3aed"),
-        ("DELIVERED",     str(len(fil[fil["current_status"].isin(["Delivered","Invoiced","Paid"])])),             "#059669"),
-        ("PAID",          str(len(fil[fil["current_status"]=="Paid"])),                                           "#16a34a"),
-        ("TOTAL VALUE",   f"₹{tv/100000:.1f}L",                                                                   "#f97316"),
+        ("TOTAL ORDERS",  str(len(fil)),                                                                "#1d4ed8"),
+        ("PENDING",       str(len(fil[fil["current_status"]=="Pending"])),                              "#d97706"),
+        ("IN TRANSIT",    str(len(fil[fil["current_status"].isin(["Procured","Dispatched"])])),         "#7c3aed"),
+        ("DELIVERED",     str(len(fil[fil["current_status"].isin(["Delivered","Invoiced","Paid"])])),   "#059669"),
+        ("PAID",          str(len(fil[fil["current_status"]=="Paid"])),                                 "#16a34a"),
+        ("TOTAL VALUE",   f"₹{tv/100000:.1f}L",                                                        "#f97316"),
     ]
     cols = st.columns(6)
     for col,(label,value,color) in zip(cols,metrics):
         with col:
             st.markdown(f"""
             <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid {color};
-                        border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                        border-radius:10px;padding:18px 16px 16px;
+                        box-shadow:0 1px 4px rgba(0,0,0,0.06);">
                 <div style="font-size:10px;font-weight:700;text-transform:uppercase;
-                            letter-spacing:0.7px;color:#64748b;">{label}</div>
-                <div style="font-size:26px;font-weight:800;margin-top:8px;color:{color};">{value}</div>
+                            letter-spacing:0.7px;color:#64748b;margin-bottom:10px;">{label}</div>
+                <div style="font-size:28px;font-weight:800;color:{color};line-height:1;">{value}</div>
             </div>""", unsafe_allow_html=True)
 
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    # ── Company filter ──
-    c_all, c_rk, c_bt, c_el, _ = st.columns([1.3,1,1.2,0.7,3])
+    # ── Company filter buttons ──
+    c_all, c_rk, c_bt, c_el, _ = st.columns([1.4, 1, 1.3, 0.7, 3])
     with c_all:
         if st.button("🏢 All Companies" + (" ✓" if cf=="All" else ""), key="f_all",
                      type="primary" if cf=="All" else "secondary", use_container_width=True):
-            st.session_state.company_filter="All"; st.rerun()
+            st.session_state.company_filter = "All"; st.rerun()
     with c_rk:
         if st.button("Robokart" + (" ✓" if cf=="Robokart" else ""), key="f_rk",
                      type="primary" if cf=="Robokart" else "secondary", use_container_width=True):
-            st.session_state.company_filter="Robokart"; st.rerun()
+            st.session_state.company_filter = "Robokart"; st.rerun()
     with c_bt:
         if st.button("Bharat Tech" + (" ✓" if cf=="Bharat Tech" else ""), key="f_bt",
                      type="primary" if cf=="Bharat Tech" else "secondary", use_container_width=True):
-            st.session_state.company_filter="Bharat Tech"; st.rerun()
+            st.session_state.company_filter = "Bharat Tech"; st.rerun()
     with c_el:
         if st.button("EL" + (" ✓" if cf=="EL" else ""), key="f_el",
                      type="primary" if cf=="EL" else "secondary", use_container_width=True):
-            st.session_state.company_filter="EL"; st.rerun()
+            st.session_state.company_filter = "EL"; st.rerun()
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    # ── Orders HTML table ──
-    title = "All Orders" if cf=="All" else f"{cf} Orders"
-    st.markdown(f"""
-    <div class="sc-card">
-        <div class="sc-card-header">
-            <span class="sc-card-title">📦 {title}</span>
-            <span class="sc-card-count">{len(fil)} orders</span>
-        </div>
-        <div style="overflow-x:auto;">
-    """, unsafe_allow_html=True)
+    # ── Orders table card ──
+    title = "All Orders" if cf == "All" else f"{cf} Orders"
+    TH = ("padding:11px 16px;background:#f8fafc;font-size:10.5px;font-weight:700;"
+          "text-transform:uppercase;letter-spacing:0.5px;color:#475569;"
+          "border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;")
+    TD = ("padding:13px 16px;border-bottom:1px solid #f1f5f9;"
+          "color:#1e293b;vertical-align:middle;font-size:12.5px;")
 
     if len(fil) == 0:
-        st.markdown('<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">No orders for this company.</div>', unsafe_allow_html=True)
+        no_data = '<div style="padding:32px;text-align:center;color:#94a3b8;font-size:13px;">No orders found for this company.</div>'
+        table_body = no_data
     else:
-        TH = "padding:10px 14px;background:#f8fafc;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;"
-        TD = "padding:12px 14px;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle;font-size:12.5px;"
-        rows = ""
-        for i,(_, r) in enumerate(fil.iterrows()):
-            bg = "#fff" if i%2==0 else "#fafbfc"
-            rows += f"""<tr style="background:{bg};">
-                <td style="{TD}font-weight:700;color:#1d4ed8;font-size:11.5px;">{r['order_id']}</td>
+        rows_html = ""
+        for i, (_, r) in enumerate(fil.iterrows()):
+            bg = "#ffffff" if i % 2 == 0 else "#fafbfc"
+            desc = str(r['item_description'])
+            if len(desc) > 40:
+                desc = desc[:40] + "..."
+            rows_html += f"""
+            <tr style="background:{bg};" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='{bg}'">
+                <td style="{TD}font-weight:700;color:#1d4ed8;font-size:11.5px;white-space:nowrap;">{r['order_id']}</td>
                 <td style="{TD}">{cobadge(r['company'])}</td>
-                <td style="{TD}color:#64748b;">{r['po_number']}</td>
+                <td style="{TD}color:#64748b;font-size:11.5px;">{r['po_number']}</td>
                 <td style="{TD}">{r['govt_department']}</td>
-                <td style="{TD}max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{r['item_description']}</td>
-                <td style="{TD}text-align:right;">{r['quantity']}</td>
-                <td style="{TD}font-weight:700;">₹{float(r['total_value']):,.0f}</td>
+                <td style="{TD}color:#374151;">{desc}</td>
+                <td style="{TD}text-align:center;font-weight:600;">{r['quantity']}</td>
+                <td style="{TD}font-weight:700;white-space:nowrap;">₹{float(r['total_value']):,.0f}</td>
                 <td style="{TD}">{pbadge(r['priority'])}</td>
                 <td style="{TD}">{sbadge(r['current_status'])}</td>
                 <td style="{TD}color:#94a3b8;font-size:11px;white-space:nowrap;">{r['last_updated']}</td>
             </tr>"""
-        st.markdown(f"""
-        <table class="orders-table">
+        table_body = f"""
+        <table style="width:100%;border-collapse:collapse;">
             <thead><tr>
-                <th style="{TH}">Order ID</th><th style="{TH}">Company</th>
-                <th style="{TH}">PO Number</th><th style="{TH}">Department</th>
-                <th style="{TH}">Description</th><th style="{TH}">Qty</th>
-                <th style="{TH}">Value</th><th style="{TH}">Priority</th>
-                <th style="{TH}">Status</th><th style="{TH}">Last Updated</th>
+                <th style="{TH}">Order ID</th>
+                <th style="{TH}">Company</th>
+                <th style="{TH}">PO Number</th>
+                <th style="{TH}">Department</th>
+                <th style="{TH}">Description</th>
+                <th style="{TH}">Qty</th>
+                <th style="{TH}">Value</th>
+                <th style="{TH}">Priority</th>
+                <th style="{TH}">Status</th>
+                <th style="{TH}">Last Updated</th>
             </tr></thead>
-            <tbody>{rows}</tbody>
-        </table>""", unsafe_allow_html=True)
+            <tbody>{rows_html}</tbody>
+        </table>"""
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+                box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:14px 20px;border-bottom:1px solid #f1f5f9;background:#fafbfc;">
+            <div style="font-size:14px;font-weight:700;color:#0f172a;">📦 {title}</div>
+            <div style="font-size:11px;font-weight:600;color:#64748b;
+                        background:#f1f5f9;padding:4px 14px;border-radius:99px;">
+                {len(fil)} orders
+            </div>
+        </div>
+        <div style="overflow-x:auto;">{table_body}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)  # close content wrapper
+    st.markdown("<div style='padding:0 32px;'>", unsafe_allow_html=True)
     show_footer()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # NEW ORDER
