@@ -291,10 +291,8 @@ label,
 
 /* ─── SIDEBAR ───────────────────────────────────────────────────── */
 [data-testid="stSidebar"] {
-    background:   #0f172a !important;
-    min-width:    240px !important;
-    max-width:    240px !important;
-    border-right: 1px solid #1e293b !important;
+    background:#0f172a !important;
+    border-right:1px solid #1e293b !important;
 }
 [data-testid="stSidebar"] > div:first-child {
     padding:    0 !important;
@@ -450,35 +448,58 @@ def section_label(text):
 # ══════════════════════════════════════════════════════════════════════════════
 def login_page():
     # CSS: dark gradient background, hide sidebar completely on login
-    st.markdown("""
-    <style>
-    .stApp { background: linear-gradient(135deg,#0c1426 0%,#1e3a5f 50%,#0c1426 100%) !important; }
-    [data-testid="stSidebar"]        { display: none !important; }
-    [data-testid="collapsedControl"] { display: none !important; }
-    .block-container { padding: 48px 16px 0 !important; }
-    /* Login-specific input override (belt + braces) */
-    .stTextInput input {
-        background-color: #ffffff !important;
-        background:       #ffffff !important;
-        color:            #111827 !important;
-        -webkit-text-fill-color: #111827 !important;
-        height: 46px !important;
-    }
-    /* Sign-in button red (matches reference screenshot) */
-    [data-testid="stForm"] button[kind="primaryFormSubmit"],
-    [data-testid="stForm"] .stButton > button {
-        background:    #e53e3e !important;
-        border-color:  #e53e3e !important;
-        color:         #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        height:        50px !important;
-        font-size:     15px !important;
-        font-weight:   700 !important;
-        border-radius: 8px !important;
-        width:         100% !important;
-    }
-    [data-testid="stForm"] .stButton > button:hover { background: #c53030 !important; }
-    </style>""", unsafe_allow_html=True)
+st.markdown("""
+<style>
+
+.stApp {
+    background: linear-gradient(135deg,#0c1426 0%,#1e3a5f 50%,#0c1426 100%) !important;
+}
+
+/* Hide sidebar on login page */
+[data-testid="stSidebar"] { 
+    display: none !important; 
+}
+
+/* Container spacing */
+.block-container { 
+    padding: 48px 16px 0 !important; 
+}
+
+/* LOGIN LABEL COLOR */
+label {
+    color:#ffffff !important;
+    font-weight:600 !important;
+}
+
+/* LOGIN INPUT STYLE */
+.stTextInput input {
+    background-color:#ffffff !important;
+    background:#ffffff !important;
+    color:#111827 !important;
+    -webkit-text-fill-color:#111827 !important;
+    height:46px !important;
+}
+
+/* Sign-in button */
+[data-testid="stForm"] button[kind="primaryFormSubmit"],
+[data-testid="stForm"] .stButton > button {
+    background:#e53e3e !important;
+    border-color:#e53e3e !important;
+    color:#ffffff !important;
+    -webkit-text-fill-color:#ffffff !important;
+    height:50px !important;
+    font-size:15px !important;
+    font-weight:700 !important;
+    border-radius:8px !important;
+    width:100% !important;
+}
+
+[data-testid="stForm"] .stButton > button:hover { 
+    background:#c53030 !important; 
+}
+
+</style>
+""", unsafe_allow_html=True)
 
     _, col, _ = st.columns([1, 1.15, 1])
     with col:
@@ -553,20 +574,6 @@ def login_page():
         if st.session_state.login_error:
             st.error(st.session_state.login_error)
 
-        # ── Bottom card: hint box ─────────────────────────────────────────────
-        st.markdown("""
-        <div style="background:#fff;border:1px solid #e2e8f0;border-top:none;
-             border-radius:0 0 16px 16px;padding:16px 32px 28px;
-             box-shadow:0 20px 50px rgba(0,0,0,0.4);">
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
-               padding:12px 14px;font-size:11.5px;color:#64748b;line-height:1.9;">
-            <strong style="color:#374151;">Demo credentials:</strong><br>
-            <code>Admin</code> / admin@123 &nbsp;·&nbsp; <code>Manager</code> / mgr@123<br>
-            <code>Staff</code> / Ops@Secure#1 &nbsp;·&nbsp; <code>Viewer</code> / view123
-          </div>
-          <p style="text-align:center;font-size:11.5px;color:#94a3b8;margin:14px 0 0;">
-              🔒 Secure access &nbsp;·&nbsp; Contact administrator for credentials</p>
-        </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 8. SIDEBAR
@@ -1468,35 +1475,71 @@ def page_admin():
 # ══════════════════════════════════════════════════════════════════════════════
 # 16. ROUTER  ← controls the entire app flow
 # ══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
+# 16. ROUTER
+# ══════════════════════════════════════════════════════════════════════════════
 def main():
+
+    # If not logged in → show login page
     if not st.session_state.logged_in:
-        # Not logged in: show login, hide sidebar
         login_page()
         return
 
-    # Logged in: inject CSS to ensure sidebar is always visible
+    # Dashboard styling + sidebar toggle
     st.markdown("""
     <style>
-    .stApp { background: #f1f5f9 !important; }
-    [data-testid="stSidebar"] { display: flex !important; }
-    </style>""", unsafe_allow_html=True)
 
+    /* Dashboard background */
+    .stApp{
+        background:#f1f5f9 !important;
+    }
+
+    /* Show sidebar toggle button */
+    [data-testid="collapsedControl"]{
+        display:block !important;
+        position:fixed !important;
+        top:14px !important;
+        left:14px !important;
+        z-index:9999 !important;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Render sidebar
     render_sidebar()
 
-    # Guard: if current page not allowed for role, go to Dashboard
+    # Guard: ensure page allowed for role
     allowed = MENUS.get(st.session_state.role, [])
+
     if st.session_state.page not in allowed:
         st.session_state.page = "Dashboard"
         st.rerun()
 
     page = st.session_state.page
-    if   page == "Dashboard":     page_dashboard()
-    elif page == "New Order":     page_new_order()
-    elif page == "Update Order":  page_update_order()
-    elif page == "Order Details": page_order_details()
-    elif page == "Activity Log":  page_activity_log()
-    elif page == "Reports":       page_reports()
-    elif page == "Admin":         page_admin()
+
+    # Router
+    if page == "Dashboard":
+        page_dashboard()
+
+    elif page == "New Order":
+        page_new_order()
+
+    elif page == "Update Order":
+        page_update_order()
+
+    elif page == "Order Details":
+        page_order_details()
+
+    elif page == "Activity Log":
+        page_activity_log()
+
+    elif page == "Reports":
+        page_reports()
+
+    elif page == "Admin":
+        page_admin()
+
 
 if __name__ == "__main__":
     main()
