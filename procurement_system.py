@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Supply Chain Tracking System",
     page_icon="🏭",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -455,25 +455,30 @@ def login_page():
         background: linear-gradient(135deg,#0c1426 0%,#1e3a5f 50%,#0c1426 100%) !important;
     }
 
-    /* Hide sidebar on login page */
-    [data-testid="stSidebar"] {
-        display: none !important;
+    /* Hide sidebar ONLY on login */
+    [data-testid="stSidebar"]{
+        display:none !important;
+    }
+
+    /* Hide sidebar toggle */
+    [data-testid="collapsedControl"]{
+        display:none !important;
     }
 
     /* Container spacing */
-    .block-container {
-        padding: 48px 16px 0 !important;
+    .block-container{
+        padding:48px 16px 0 !important;
     }
 
-    /* LOGIN LABEL COLOR */
+    /* Login label color */
     .stTextInput label,
     .stTextInput > label,
-    label[data-testid="stWidgetLabel"] {
-        color:#ffffff !important;
-    }
-
-    /* LOGIN INPUT STYLE */
-    .stTextInput input {
+    label[data-testid="stWidgetLabel"]{
+    color:#ffffff !important;
+   }
+    
+    /* Login input style */
+    .stTextInput input{
         background:#ffffff !important;
         color:#111827 !important;
         -webkit-text-fill-color:#111827 !important;
@@ -1466,7 +1471,7 @@ def page_admin():
 # ══════════════════════════════════════════════════════════════════════════════
 def main():
 
-    # Show login page if not authenticated
+    # If user not logged in → show login
     if not st.session_state.logged_in:
         login_page()
         return
@@ -1475,11 +1480,12 @@ def main():
     st.markdown("""
     <style>
 
+    /* Dashboard background */
     .stApp{
         background:#f1f5f9 !important;
     }
 
-    /* Sidebar toggle button */
+    /* Show sidebar toggle */
     [data-testid="collapsedControl"]{
         display:block !important;
         position:fixed !important;
@@ -1491,15 +1497,14 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # Sidebar navigation
+    # Render sidebar
     render_sidebar()
 
+    # Allowed pages
     allowed = MENUS.get(st.session_state.role, [])
 
-    # Security guard
     if st.session_state.page not in allowed:
         st.session_state.page = "Dashboard"
-        st.rerun()
 
     page = st.session_state.page
 
