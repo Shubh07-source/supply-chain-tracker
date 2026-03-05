@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Supply Chain Tracking System",
     page_icon="🏭",
     layout="wide",
-    initial_sidebar_state="collapsed",   # collapsed so sidebar hidden on login
+    initial_sidebar_state="expanded",
 )
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -466,15 +466,18 @@ def login_page():
     }
 
     /* LOGIN LABEL COLOR */
-    label {
+    .stTextInput label,
+    .stTextInput > label,
+    label[data-testid="stWidgetLabel"] {
         color:#ffffff !important;
-        font-weight:600 !important;
     }
 
     /* LOGIN INPUT STYLE */
     .stTextInput input {
         background:#ffffff !important;
         color:#111827 !important;
+        -webkit-text-fill-color:#111827 !important;
+        caret-color:#111827 !important;
         height:46px !important;
     }
 
@@ -1463,21 +1466,20 @@ def page_admin():
 # ══════════════════════════════════════════════════════════════════════════════
 def main():
 
-    # If not logged in → show login page
+    # Show login page if not authenticated
     if not st.session_state.logged_in:
         login_page()
         return
 
-    # Dashboard styling + sidebar toggle
+    # Dashboard styling
     st.markdown("""
     <style>
 
-    /* Dashboard background */
     .stApp{
         background:#f1f5f9 !important;
     }
 
-    /* Show sidebar toggle button */
+    /* Sidebar toggle button */
     [data-testid="collapsedControl"]{
         display:block !important;
         position:fixed !important;
@@ -1489,19 +1491,18 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    # Render sidebar
+    # Sidebar navigation
     render_sidebar()
 
-    # Guard: ensure page allowed for role
     allowed = MENUS.get(st.session_state.role, [])
 
+    # Security guard
     if st.session_state.page not in allowed:
         st.session_state.page = "Dashboard"
         st.rerun()
 
     page = st.session_state.page
 
-    # Router
     if page == "Dashboard":
         page_dashboard()
 
@@ -1522,7 +1523,3 @@ def main():
 
     elif page == "Admin":
         page_admin()
-
-
-if __name__ == "__main__":
-    main()
