@@ -1528,3 +1528,5 @@ def main():
 
     elif page == "Admin":
         page_admin()
+
+main()
