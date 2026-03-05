@@ -481,10 +481,11 @@ def login_page():
     </style>
     """, unsafe_allow_html=True)
 
-     _, col, _ = st.columns([1,1.15,1])
+    _, col, _ = st.columns([1,1.15,1])
 
-     with col:
+    with col:
         st.markdown("Login UI here")
+
         # ── Top branding card (pure HTML, no widgets inside) ──────────────────
         st.markdown("""
         <div style="background:#fff;border:1px solid #e2e8f0;border-bottom:none;
