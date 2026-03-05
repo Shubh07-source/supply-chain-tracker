@@ -447,62 +447,44 @@ def section_label(text):
 #             The form submit button triggers exactly once per click.
 # ══════════════════════════════════════════════════════════════════════════════
 def login_page():
-    # CSS: dark gradient background, hide sidebar completely on login
-st.markdown("""
-<style>
 
-.stApp {
-    background: linear-gradient(135deg,#0c1426 0%,#1e3a5f 50%,#0c1426 100%) !important;
-}
+    st.markdown("""
+    <style>
 
-/* Hide sidebar on login page */
-[data-testid="stSidebar"] { 
-    display: none !important; 
-}
+    .stApp {
+        background: linear-gradient(135deg,#0c1426 0%,#1e3a5f 50%,#0c1426 100%) !important;
+    }
 
-/* Container spacing */
-.block-container { 
-    padding: 48px 16px 0 !important; 
-}
+    /* Hide sidebar on login page */
+    [data-testid="stSidebar"] {
+        display: none !important;
+    }
 
-/* LOGIN LABEL COLOR */
-label {
-    color:#ffffff !important;
-    font-weight:600 !important;
-}
+    /* Container spacing */
+    .block-container {
+        padding: 48px 16px 0 !important;
+    }
 
-/* LOGIN INPUT STYLE */
-.stTextInput input {
-    background-color:#ffffff !important;
-    background:#ffffff !important;
-    color:#111827 !important;
-    -webkit-text-fill-color:#111827 !important;
-    height:46px !important;
-}
+    /* LOGIN LABEL COLOR */
+    label {
+        color:#ffffff !important;
+        font-weight:600 !important;
+    }
 
-/* Sign-in button */
-[data-testid="stForm"] button[kind="primaryFormSubmit"],
-[data-testid="stForm"] .stButton > button {
-    background:#e53e3e !important;
-    border-color:#e53e3e !important;
-    color:#ffffff !important;
-    -webkit-text-fill-color:#ffffff !important;
-    height:50px !important;
-    font-size:15px !important;
-    font-weight:700 !important;
-    border-radius:8px !important;
-    width:100% !important;
-}
+    /* LOGIN INPUT STYLE */
+    .stTextInput input {
+        background:#ffffff !important;
+        color:#111827 !important;
+        height:46px !important;
+    }
 
-[data-testid="stForm"] .stButton > button:hover { 
-    background:#c53030 !important; 
-}
+    </style>
+    """, unsafe_allow_html=True)
 
-</style>
-""", unsafe_allow_html=True)
+     _, col, _ = st.columns([1,1.15,1])
 
-    _, col, _ = st.columns([1, 1.15, 1])
-    with col:
+     with col:
+        st.markdown("Login UI here")
         # ── Top branding card (pure HTML, no widgets inside) ──────────────────
         st.markdown("""
         <div style="background:#fff;border:1px solid #e2e8f0;border-bottom:none;
