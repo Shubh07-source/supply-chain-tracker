@@ -36,13 +36,13 @@ USERS = {
     "Viewer":  {"password":"view123",      "role":"Viewer",  "name":"Finance Viewer"},
 }
 MENUS = {
-    "Admin":   ["Dashboard","New Order","Update Order","Order Details","Activity Log","Reports","Admin Panel"],
+    "Admin":   ["Dashboard","New Order","Update Order","Order Details","Activity Log","Reports","Manage Records","Admin Panel"],
     "Manager": ["Dashboard","New Order","Update Order","Order Details","Activity Log","Reports"],
     "Staff":   ["Dashboard","Update Order","Order Details","Activity Log"],
     "Viewer":  ["Dashboard","Order Details","Activity Log"],
 }
 ICONS = {"Dashboard":"📊","New Order":"➕","Update Order":"🔄","Order Details":"🔍",
-         "Activity Log":"📋","Reports":"📈","Admin Panel":"⚙️"}
+         "Activity Log":"📋","Reports":"📈","Manage Records":"🗂️","Admin Panel":"⚙️"}
 
 # ─── DATA ─────────────────────────────────────────────────────────────────────
 DATA_DIR = "data"
@@ -895,6 +895,220 @@ def page_admin():
     st.markdown('</div>',unsafe_allow_html=True); footer()
 
 
+# ─── MANAGE RECORDS (Admin only) ─────────────────────────────────────────────
+def page_manage_records():
+    topbar("🗂️ Manage Records","Edit or delete any order — Admin only · All changes are auto-saved")
+    D = st.session_state.D
+
+    # Guard — should never reach here for non-admin but double-check
+    if st.session_state.role != "Admin":
+        st.error("⛔ Access denied. Admin only."); return
+
+    st.markdown('<div style="padding:0 24px;">', unsafe_allow_html=True)
+
+    orders = D["orders"].copy()
+    if len(orders) == 0:
+        st.info("No orders found."); st.markdown('</div>', unsafe_allow_html=True); footer(); return
+
+    # ── which order is being edited right now ──────────────────────────────────
+    if "mr_edit_id" not in st.session_state: st.session_state.mr_edit_id = None
+    if "mr_del_id"  not in st.session_state: st.session_state.mr_del_id  = None
+
+    # ── DELETE CONFIRMATION MODAL ──────────────────────────────────────────────
+    if st.session_state.mr_del_id:
+        del_oid = st.session_state.mr_del_id
+        del_order = get_order(del_oid)
+        st.markdown(f"""
+        <div style="background:#fff5f5;border:1.5px solid #fca5a5;border-radius:12px;
+             padding:18px 22px;margin-bottom:20px;">
+          <div style="font-size:14px;font-weight:800;color:#dc2626;margin-bottom:6px;">
+            ⚠️ Confirm Delete — {del_oid}</div>
+          <div style="font-size:13px;color:#1e293b;margin-bottom:14px;">
+            This will permanently delete order <strong>{del_oid}</strong>
+            ({del_order['po_number'] if del_order is not None else ''}) and ALL related
+            procurement, dispatch, delivery, invoice and activity records.
+            <strong>This cannot be undone.</strong>
+          </div>
+        </div>""", unsafe_allow_html=True)
+        ca, cb, _ = st.columns([1, 1, 4])
+        with ca:
+            if st.button("🗑️  Yes, Delete", type="primary", key="del_confirm_yes",
+                         use_container_width=True):
+                oid = st.session_state.mr_del_id
+                # Delete from all tables
+                for tbl in ["orders","procurement","dispatch","delivery","invoices"]:
+                    D[tbl] = D[tbl][D[tbl]["order_id"] != oid].reset_index(drop=True); save(tbl)
+                # Log the deletion
+                log_action(oid, "ORDER_DELETED", "—", "—",
+                           st.session_state.user_name, f"Order deleted by Admin")
+                st.session_state.mr_del_id = None
+                st.success(f"✅ Order {oid} and all related records deleted.")
+                st.rerun()
+        with cb:
+            if st.button("Cancel", key="del_confirm_no", use_container_width=True):
+                st.session_state.mr_del_id = None; st.rerun()
+
+    # ── EDIT FORM ──────────────────────────────────────────────────────────────
+    if st.session_state.mr_edit_id:
+        edit_oid = st.session_state.mr_edit_id
+        eo = get_order(edit_oid)
+        if eo is None:
+            st.session_state.mr_edit_id = None; st.rerun()
+
+        st.markdown(f"""
+        <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;
+             padding:16px 22px 8px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:800;color:#0369a1;">
+            ✏️ Editing — {edit_oid} &nbsp;·&nbsp;
+            <span style="font-weight:500;font-size:12.5px;">{eo['po_number']}</span>
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+        with st.form("edit_order_form"):
+            section_label("Company & Classification")
+            c1, c2 = st.columns(2)
+            with c1:
+                co_idx = COMPANIES.index(eo["company"]) if eo["company"] in COMPANIES else 0
+                e_company = st.selectbox("Company *", COMPANIES, index=co_idx, key="ef_co")
+            with c2:
+                pr_idx = PRIORITIES.index(eo["priority"]) if eo["priority"] in PRIORITIES else 1
+                e_priority = st.selectbox("Priority *", PRIORITIES, index=pr_idx, key="ef_pr")
+
+            c3, c4 = st.columns(2)
+            with c3: e_dept    = st.text_input("Govt Department *", value=eo["govt_department"],    key="ef_dept")
+            with c4: e_po      = st.text_input("PO Number *",        value=eo["po_number"],          key="ef_po")
+
+            section_label("Contact Information")
+            c5, c6 = st.columns(2)
+            with c5: e_contact = st.text_input("Contact Person *",   value=eo["contact_person"],    key="ef_cp")
+            with c6: e_phone   = st.text_input("Contact Phone",      value=eo["contact_phone"],     key="ef_ph")
+
+            section_label("Order Details")
+            c7, c8 = st.columns(2)
+            with c7:
+                e_qty  = st.number_input("Quantity *", min_value=1,
+                                          value=max(1, int(eo["quantity"]) if str(eo["quantity"]).isdigit() else 1),
+                                          step=1, key="ef_qty")
+                e_val  = st.number_input("Total Value (₹) *", min_value=0,
+                                          value=int(float(eo["total_value"])) if eo["total_value"] else 0,
+                                          step=1000, key="ef_val")
+            with c8:
+                e_assigned = st.text_input("Assigned Company", value=eo["assigned_company"], key="ef_asgn")
+                st_idx = STATUSES.index(eo["current_status"]) if eo["current_status"] in STATUSES else 0
+                e_status   = st.selectbox("Current Status", STATUSES, index=st_idx, key="ef_st")
+
+            e_desc    = st.text_area("Item Description *", value=eo["item_description"], height=80, key="ef_desc")
+            e_remarks = st.text_area("Remarks",             value=eo["remarks"],          height=55, key="ef_rem")
+
+            sp(6)
+            s1, s2, _ = st.columns([1, 1, 3])
+            with s1: save_btn   = st.form_submit_button("💾  Save Changes", type="primary",    use_container_width=True)
+            with s2: cancel_btn = st.form_submit_button("✕  Cancel",        type="secondary",  use_container_width=True)
+
+        if cancel_btn:
+            st.session_state.mr_edit_id = None; st.rerun()
+
+        if save_btn:
+            errs = [f for f, v in [("Dept", e_dept), ("PO#", e_po), ("Contact", e_contact),
+                                    ("Description", e_desc), ("Value", e_val)] if not v]
+            # Check PO uniqueness (allow same PO as this order)
+            others = D["orders"][D["orders"]["order_id"] != edit_oid]
+            if errs:
+                st.error(f"Missing required fields: {', '.join(errs)}")
+            elif e_po in others["po_number"].values:
+                st.error("⚠️ PO Number already used by another order.")
+            else:
+                prev_status = eo["current_status"]
+                idx = D["orders"][D["orders"]["order_id"] == edit_oid].index[0]
+                D["orders"].at[idx, "company"]          = e_company
+                D["orders"].at[idx, "priority"]         = e_priority
+                D["orders"].at[idx, "govt_department"]  = e_dept
+                D["orders"].at[idx, "po_number"]        = e_po
+                D["orders"].at[idx, "contact_person"]   = e_contact
+                D["orders"].at[idx, "contact_phone"]    = e_phone
+                D["orders"].at[idx, "quantity"]         = str(e_qty)
+                D["orders"].at[idx, "total_value"]      = str(e_val)
+                D["orders"].at[idx, "assigned_company"] = e_assigned
+                D["orders"].at[idx, "current_status"]   = e_status
+                D["orders"].at[idx, "item_description"] = e_desc
+                D["orders"].at[idx, "remarks"]          = e_remarks
+                D["orders"].at[idx, "last_updated"]     = now_ist()
+                save("orders")
+                change_note = f"Admin edited order"
+                if prev_status != e_status:
+                    change_note += f" · status {prev_status} → {e_status}"
+                log_action(edit_oid, "ORDER_EDITED", prev_status, e_status,
+                           st.session_state.user_name, change_note)
+                st.session_state.mr_edit_id = None
+                st.success(f"✅ Order {edit_oid} updated successfully.")
+                st.rerun()
+
+    # ── ORDERS TABLE WITH EDIT/DELETE BUTTONS ─────────────────────────────────
+    TH = "padding:10px 14px;background:#f8fafc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;"
+    TD = "padding:11px 14px;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle;font-size:12.5px;"
+
+    st.markdown(f"""
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;
+         box-shadow:0 1px 3px rgba(0,0,0,.04);">
+      <div style="display:flex;justify-content:space-between;align-items:center;
+           padding:14px 18px;border-bottom:1px solid #f1f5f9;">
+        <div style="font-size:14px;font-weight:700;color:#0f172a;">🗂️ All Orders — Edit / Delete</div>
+        <div style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;
+             padding:3px 12px;border-radius:20px;">{len(orders)} orders</div>
+      </div>
+    </div>""", unsafe_allow_html=True)
+    sp(4)
+
+    # Render each order as a row with inline Edit + Delete buttons
+    for _, r in orders.iterrows():
+        oid = r["order_id"]
+        is_editing = (st.session_state.mr_edit_id == oid)
+        row_bg = "#eef2ff" if is_editing else "#fff"
+        left_border = "border-left:3px solid #6366f1;" if is_editing else "border-left:3px solid transparent;"
+
+        row_col, btn_col = st.columns([9, 1.4])
+        with row_col:
+            desc = str(r["item_description"]); desc = desc[:40]+"…" if len(desc)>40 else desc
+            st.markdown(f"""
+            <div style="background:{row_bg};border:1px solid #e2e8f0;{left_border}
+                 border-radius:10px;padding:12px 16px;display:grid;
+                 grid-template-columns:1.8fr 1fr 1fr 1fr 0.8fr 1fr 1fr;
+                 gap:10px;align-items:center;">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#4f46e5;">{oid}</div>
+                <div style="font-size:11.5px;color:#1e293b;margin-top:2px;">{desc}</div>
+              </div>
+              <div>{cobadge(r['company'])}</div>
+              <div style="font-size:11.5px;color:#64748b;">{r['po_number']}</div>
+              <div style="font-size:11.5px;color:#1e293b;">{r['govt_department'][:22]}{'…' if len(r['govt_department'])>22 else ''}</div>
+              <div>{sbadge(r['current_status'])}</div>
+              <div>{pbadge(r['priority'])}</div>
+              <div style="font-size:11.5px;font-weight:700;color:#0f172a;">₹{float(r['total_value']):,.0f}</div>
+            </div>""", unsafe_allow_html=True)
+
+        with btn_col:
+            sp(4)
+            b1, b2 = st.columns(2)
+            with b1:
+                if st.button("✏️", key=f"edit_{oid}", help=f"Edit {oid}",
+                             type="primary" if is_editing else "secondary",
+                             use_container_width=True):
+                    st.session_state.mr_edit_id = None if is_editing else oid
+                    st.session_state.mr_del_id  = None
+                    st.rerun()
+            with b2:
+                if st.button("🗑️", key=f"del_{oid}", help=f"Delete {oid}",
+                             use_container_width=True):
+                    st.session_state.mr_del_id  = oid
+                    st.session_state.mr_edit_id = None
+                    st.rerun()
+        sp(4)
+
+    st.markdown('<p style="font-size:11.5px;color:#94a3b8;margin-top:12px;">💡 Click ✏️ to edit an order inline · Click 🗑️ to delete with confirmation</p>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    footer()
+
+
 # ─── ROUTER ───────────────────────────────────────────────────────────────────
 def main():
     if not st.session_state.logged_in:
@@ -904,12 +1118,13 @@ def main():
     allowed=MENUS.get(st.session_state.role,[])
     if st.session_state.page not in allowed: st.session_state.page="Dashboard"
     p=st.session_state.page
-    if   p=="Dashboard":    page_dashboard()
-    elif p=="New Order":    page_new_order()
-    elif p=="Update Order": page_update_order()
-    elif p=="Order Details":page_order_details()
-    elif p=="Activity Log": page_activity_log()
-    elif p=="Reports":      page_reports()
-    elif p=="Admin Panel":  page_admin()
+    if   p=="Dashboard":      page_dashboard()
+    elif p=="New Order":      page_new_order()
+    elif p=="Update Order":   page_update_order()
+    elif p=="Order Details":  page_order_details()
+    elif p=="Activity Log":   page_activity_log()
+    elif p=="Reports":        page_reports()
+    elif p=="Manage Records": page_manage_records()
+    elif p=="Admin Panel":    page_admin()
 
 main()
