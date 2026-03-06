@@ -313,18 +313,7 @@ def _sidebar_css():
             max-width:252px !important; transform:translateX(0) !important;
             visibility:visible !important; overflow:visible !important;
         }}
-        </style>
-        <script>
-        (function nuke(){{
-            var btns = document.querySelectorAll(
-                '[data-testid="collapsedControl"],[data-testid="stSidebarCollapseButton"],' +
-                'button[aria-label="Close sidebar"],button[aria-label="Open sidebar"],' +
-                'button[title="Close sidebar"],button[title="Open sidebar"]'
-            );
-            btns.forEach(function(b){{ b.style.cssText='display:none!important'; b.remove(); }});
-            if(btns.length===0) setTimeout(nuke,300);
-        }})();
-        </script>""", unsafe_allow_html=True)
+        </style>""", unsafe_allow_html=True)
     else:
         st.markdown(f"""<style>
         {_HIDE_ARROW_CSS}
