@@ -388,201 +388,185 @@ def topbar(title, sub=""):
 
 # ─── LOGIN ────────────────────────────────────────────────────────────────────
 def login_page():
+    # ── The ONLY reliable way in Streamlit: style the stForm block directly as
+    # the glass card. No HTML wrappers around widgets — they always break apart.
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
 
-    /* ══ FULL VIEWPORT — purple gradient bg, absolutely no scroll ══ */
-    html, body {
-        height:100% !important; width:100% !important;
-        margin:0 !important; padding:0 !important;
-        overflow:hidden !important;
-    }
+    /* 1. Full-viewport purple gradient, no scroll */
+    html, body { overflow:hidden !important; height:100% !important; margin:0 !important; }
     .stApp {
-        min-height:100vh !important; height:100vh !important;
-        width:100vw !important; overflow:hidden !important;
-        background: linear-gradient(135deg,#4338ca 0%,#6d28d9 50%,#7c3aed 100%) !important;
-        display:flex !important; align-items:center !important; justify-content:center !important;
+        background: linear-gradient(135deg, #3730a3 0%, #5b21b6 50%, #7c3aed 100%) !important;
+        height:100vh !important; overflow:hidden !important;
         font-family:'DM Sans',sans-serif !important;
     }
-    section[data-testid="stSidebar"],
-    [data-testid="collapsedControl"] { display:none !important; width:0 !important; }
-    #MainMenu, footer, header { display:none !important; visibility:hidden !important; }
+    #MainMenu, footer, header, [data-testid="collapsedControl"],
+    section[data-testid="stSidebar"] { display:none !important; }
 
+    /* 2. Streamlit layout containers — transparent, no padding */
     .block-container {
-        padding:0 !important; margin:0 !important;
-        max-width:100% !important; width:100% !important;
-        height:100vh !important; overflow:hidden !important;
-    }
-    section[data-testid="stMain"] {
-        height:100vh !important; overflow:hidden !important;
+        padding:0 !important; max-width:460px !important;
+        margin:0 auto !important;
     }
     section[data-testid="stMain"] > div {
-        height:100vh !important; overflow:hidden !important;
-        padding:0 !important;
-        display:flex !important; align-items:center !important; justify-content:center !important;
+        padding:0 !important; height:100vh !important;
+        display:flex !important; flex-direction:column !important;
+        align-items:center !important; justify-content:center !important;
     }
-    section[data-testid="stMain"] > div > div {
-        width:100% !important;
-        display:flex !important; align-items:center !important; justify-content:center !important;
-    }
-
-    /* ══ INPUTS — glassmorphism style, placeholder only ══ */
-    .stTextInput input,
-    input[type="text"],
-    input[type="password"] {
-        background:rgba(255,255,255,0.15) !important;
-        background-color:rgba(255,255,255,0.15) !important;
-        color:#ffffff !important;
-        -webkit-text-fill-color:#ffffff !important;
-        caret-color:#ffffff !important;
-        border:1px solid rgba(255,255,255,0.3) !important;
-        border-radius:12px !important;
-        height:52px !important;
-        font-size:15px !important;
-        padding:0 18px !important;
-        opacity:1 !important;
-        font-family:'DM Sans',sans-serif !important;
-        backdrop-filter:blur(4px) !important;
-        -webkit-backdrop-filter:blur(4px) !important;
-        transition:border-color .2s, background .2s !important;
-    }
-    .stTextInput input::placeholder {
-        color:rgba(255,255,255,0.6) !important;
-        -webkit-text-fill-color:rgba(255,255,255,0.6) !important;
-    }
-    .stTextInput input:focus {
-        background:rgba(255,255,255,0.22) !important;
-        background-color:rgba(255,255,255,0.22) !important;
-        border-color:rgba(255,255,255,0.7) !important;
-        box-shadow:0 0 0 3px rgba(255,255,255,0.12) !important;
-        outline:none !important;
-        color:#ffffff !important;
-        -webkit-text-fill-color:#ffffff !important;
-    }
-    div[data-baseweb="input"],
-    div[data-baseweb="base-input"],
-    .stTextInput > div > div {
-        background:transparent !important;
-        border:none !important;
-        border-radius:12px !important;
+    section[data-testid="stMain"] > div > div:first-child {
+        width:100% !important; max-width:460px !important;
     }
 
-    /* HIDE labels — placeholders carry the label */
-    .stTextInput label,
-    div[data-testid="stWidgetLabel"] p,
-    div[data-testid="stWidgetLabel"] label {
-        display:none !important;
-        height:0 !important; margin:0 !important; padding:0 !important;
+    /* 3. The heading HTML block — glass top */
+    .login-card-top {
+        background: rgba(255,255,255,0.13) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(255,255,255,0.25) !important;
+        border-bottom: none !important;
+        border-radius: 22px 22px 0 0 !important;
+        padding: 40px 40px 28px !important;
+        text-align: center !important;
     }
 
-    /* ══ SIGN IN BUTTON ══ */
-    .stFormSubmitButton > button {
-        background:linear-gradient(135deg,#3b82f6,#2563eb) !important;
-        border:none !important;
-        color:#ffffff !important; -webkit-text-fill-color:#ffffff !important;
-        font-size:16px !important; font-weight:700 !important;
-        height:52px !important; border-radius:12px !important;
-        box-shadow:0 6px 24px rgba(37,99,235,.5) !important;
-        width:100% !important; letter-spacing:.04em !important;
-        font-family:'DM Sans',sans-serif !important;
-        transition:all .2s !important;
-    }
-    .stFormSubmitButton > button:hover {
-        background:linear-gradient(135deg,#2563eb,#1d4ed8) !important;
-        box-shadow:0 8px 32px rgba(37,99,235,.65) !important;
-        transform:translateY(-1px) !important;
+    /* 4. The stForm element IS the glass card middle */
+    section[data-testid="stForm"],
+    div[data-testid="stForm"] {
+        background: rgba(255,255,255,0.13) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(255,255,255,0.25) !important;
+        border-top: none !important;
+        border-bottom: none !important;
+        border-radius: 0 !important;
+        padding: 28px 40px 24px !important;
+        box-shadow: none !important;
     }
 
-    /* ══ FORM — transparent, no chrome ══ */
-    [data-testid="stForm"], .stForm, section form {
-        background:transparent !important;
-        border:none !important; box-shadow:none !important;
-        padding:0 !important;
+    /* 5. Footer HTML block — glass bottom */
+    .login-card-bottom {
+        background: rgba(255,255,255,0.10) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(255,255,255,0.25) !important;
+        border-top: 1px solid rgba(255,255,255,0.12) !important;
+        border-radius: 0 0 22px 22px !important;
+        padding: 18px 40px 26px !important;
+        text-align: center !important;
     }
 
-    /* columns gap */
-    [data-testid="column"] { padding:0 !important; }
+    /* 6. INPUTS — glass style, white text */
+    section[data-testid="stForm"] input[type="text"],
+    section[data-testid="stForm"] input[type="password"],
+    section[data-testid="stForm"] .stTextInput input {
+        background: rgba(255,255,255,0.18) !important;
+        background-color: rgba(255,255,255,0.18) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        caret-color: #ffffff !important;
+        border: 1.5px solid rgba(255,255,255,0.35) !important;
+        border-radius: 12px !important;
+        height: 52px !important;
+        font-size: 15px !important;
+        padding: 0 18px !important;
+        font-family: 'DM Sans',sans-serif !important;
+        opacity: 1 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    section[data-testid="stForm"] input::placeholder {
+        color: rgba(255,255,255,0.55) !important;
+        -webkit-text-fill-color: rgba(255,255,255,0.55) !important;
+    }
+    section[data-testid="stForm"] input:focus {
+        background: rgba(255,255,255,0.25) !important;
+        background-color: rgba(255,255,255,0.25) !important;
+        border-color: rgba(255,255,255,0.7) !important;
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.1) !important;
+        outline: none !important;
+    }
+    section[data-testid="stForm"] div[data-baseweb="input"],
+    section[data-testid="stForm"] div[data-baseweb="base-input"],
+    section[data-testid="stForm"] .stTextInput > div > div {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 12px !important;
+    }
 
-    /* error */
-    .stAlert { border-radius:12px !important; }
+    /* 7. HIDE labels (placeholders serve as labels) */
+    section[data-testid="stForm"] .stTextInput label,
+    section[data-testid="stForm"] div[data-testid="stWidgetLabel"] {
+        display: none !important;
+        height: 0 !important; margin: 0 !important; padding: 0 !important;
+    }
+
+    /* 8. SIGN IN BUTTON */
+    section[data-testid="stForm"] .stFormSubmitButton > button {
+        background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+        border: none !important;
+        color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;
+        font-size: 16px !important; font-weight: 700 !important;
+        height: 54px !important; border-radius: 12px !important;
+        box-shadow: 0 6px 24px rgba(37,99,235,0.5) !important;
+        width: 100% !important; letter-spacing: .04em !important;
+        font-family: 'DM Sans',sans-serif !important;
+    }
+    section[data-testid="stForm"] .stFormSubmitButton > button:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+        box-shadow: 0 8px 32px rgba(37,99,235,0.65) !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-    # ── SINGLE CENTERED COLUMN ─────────────────────────────────────────────────
-    _, col, _ = st.columns([1, 1.6, 1])
-    with col:
-        # ── GLASS CARD (entire card is one HTML block) ─────────────────────────
-        st.markdown("""
-        <div style="
-            background:rgba(255,255,255,0.12);
-            backdrop-filter:blur(20px);
-            -webkit-backdrop-filter:blur(20px);
-            border:1px solid rgba(255,255,255,0.22);
-            border-radius:24px;
-            padding:44px 44px 14px;
-            box-shadow:0 24px 64px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.18);
-        ">
-          <!-- Heading -->
-          <div style="text-align:center;margin-bottom:6px;">
-            <div style="font-size:30px;font-weight:900;color:#ffffff;
-                 letter-spacing:-.4px;font-family:'DM Sans',sans-serif;line-height:1.1;">
-              Welcome Back</div>
-            <div style="font-size:14px;color:rgba(255,255,255,0.65);margin-top:8px;
-                 font-family:'DM Sans',sans-serif;font-weight:400;">
-              Sign in to your account</div>
-          </div>
+    # ── HEADING block (styled as glass card top via CSS class) ─────────────────
+    st.markdown("""
+    <div class="login-card-top">
+      <div style="display:flex;align-items:center;justify-content:center;
+           gap:12px;margin-bottom:20px;">
+        <div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;
+             background:linear-gradient(135deg,#312e81,#4f46e5);
+             display:flex;align-items:center;justify-content:center;font-size:23px;
+             box-shadow:0 4px 14px rgba(79,70,229,0.45);">🏭</div>
+        <div style="text-align:left;">
+          <div style="font-size:15px;font-weight:800;color:#ffffff;letter-spacing:-.1px;
+               font-family:'DM Sans',sans-serif;">Supply Chain</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.55);font-weight:500;
+               letter-spacing:.9px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">
+            Tracking System</div>
         </div>
-        """, unsafe_allow_html=True)
+      </div>
+      <div style="font-size:28px;font-weight:900;color:#ffffff;letter-spacing:-.4px;
+           margin-bottom:6px;font-family:'DM Sans',sans-serif;">Welcome Back</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.6);
+           font-family:'DM Sans',sans-serif;">Sign in to your account</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        # ── Streamlit form (below the heading HTML, inside same card visual) ──
-        st.markdown("""
-        <div style="
-            background:rgba(255,255,255,0.12);
-            backdrop-filter:blur(20px);
-            -webkit-backdrop-filter:blur(20px);
-            border-left:1px solid rgba(255,255,255,0.22);
-            border-right:1px solid rgba(255,255,255,0.22);
-            padding:28px 44px 0;
-            margin-top:-2px;
-        ">
-        </div>""", unsafe_allow_html=True)
+    # ── FORM (Streamlit stForm = glass card middle, styled via CSS above) ─────
+    with st.form("lf", clear_on_submit=False):
+        uname = st.text_input("u", placeholder="Email Address",
+                               key="lu", label_visibility="collapsed")
+        sp(10)
+        pword = st.text_input("p", placeholder="Password",
+                               type="password", key="lp", label_visibility="collapsed")
+        sp(18)
+        submitted = st.form_submit_button("Sign In",
+                                           use_container_width=True, type="primary")
 
-        with st.form("lf", clear_on_submit=False):
-            uname = st.text_input("u", placeholder="Email Address", key="lu",
-                                   label_visibility="collapsed")
-            sp(10)
-            pword = st.text_input("p", placeholder="Password",
-                                   type="password", key="lp",
-                                   label_visibility="collapsed")
-            sp(20)
-            submitted = st.form_submit_button("Sign In",
-                                               use_container_width=True, type="primary")
+    # ── FOOTER ─────────────────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="login-card-bottom">
+      <span style="font-size:12.5px;color:rgba(255,255,255,0.45);
+           font-family:'DM Sans',sans-serif;">
+        🔒 &nbsp;Secured &nbsp;·&nbsp; Contact your administrator for access
+      </span>
+    </div>
+    """, unsafe_allow_html=True)
 
-        # ── Bottom of card ──────────────────────────────────────────────────
-        st.markdown("""
-        <div style="
-            background:rgba(255,255,255,0.12);
-            backdrop-filter:blur(20px);
-            -webkit-backdrop-filter:blur(20px);
-            border-left:1px solid rgba(255,255,255,0.22);
-            border-right:1px solid rgba(255,255,255,0.22);
-            border-bottom:1px solid rgba(255,255,255,0.22);
-            border-radius:0 0 24px 24px;
-            padding:6px 44px 32px;
-            margin-top:-4px;
-            text-align:center;
-        ">
-          <div style="height:1px;background:rgba(255,255,255,0.12);margin-bottom:18px;"></div>
-          <span style="font-size:12.5px;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;">
-            🔒 &nbsp;Secured &nbsp;·&nbsp; Contact your administrator for access
-          </span>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.session_state.get("login_error"):
-            sp(8)
-            st.error(st.session_state.login_error)
+    if st.session_state.get("login_error"):
+        sp(8)
+        st.error(st.session_state.login_error)
 
     if submitted:
         u = uname.strip()
