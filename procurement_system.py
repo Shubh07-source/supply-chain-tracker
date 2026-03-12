@@ -544,12 +544,26 @@ def login_page():
     """, unsafe_allow_html=True)
 
     # ── FORM (Streamlit stForm = glass card middle, styled via CSS above) ─────
+    # Make labels visible and white
+    st.markdown("""<style>
+    section[data-testid="stForm"] .stTextInput label,
+    section[data-testid="stForm"] div[data-testid="stWidgetLabel"],
+    section[data-testid="stForm"] div[data-testid="stWidgetLabel"] p {
+        display:block !important;
+        height:auto !important; margin-bottom:6px !important;
+        color:#ffffff !important;
+        -webkit-text-fill-color:#ffffff !important;
+        font-size:13.5px !important; font-weight:700 !important;
+        font-family:'DM Sans',sans-serif !important;
+        opacity:1 !important;
+    }
+    </style>""", unsafe_allow_html=True)
     with st.form("lf", clear_on_submit=False):
-        uname = st.text_input("u", placeholder="Email Address",
-                               key="lu", label_visibility="collapsed")
+        uname = st.text_input("Username", placeholder="Enter your username",
+                               key="lu")
         sp(10)
-        pword = st.text_input("p", placeholder="Password",
-                               type="password", key="lp", label_visibility="collapsed")
+        pword = st.text_input("Password", placeholder="Password",
+                               type="password", key="lp")
         sp(18)
         submitted = st.form_submit_button("Sign In",
                                            use_container_width=True, type="primary")
