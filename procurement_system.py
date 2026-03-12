@@ -388,92 +388,283 @@ def topbar(title, sub=""):
 
 # ─── LOGIN ────────────────────────────────────────────────────────────────────
 def login_page():
-    # On login page sidebar is already width:0 (collapsed start + CSS above)
-    st.markdown("""<style>
-    .stApp{background:#eef2ff !important;}
-    .block-container{padding:0 !important;}
-    section[data-testid="stMain"]>div{
-        min-height:100vh !important; display:flex !important;
-        align-items:center !important; justify-content:center !important; padding:24px !important;
-    }
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+    .stApp { background:#3730a3 !important; }
+    section[data-testid="stSidebar"],
+    [data-testid="collapsedControl"] { display:none !important; width:0 !important; }
+    .block-container { padding:0 !important; max-width:100% !important; }
+    section[data-testid="stMain"] > div { padding:0 !important; }
+
+    /* ── INPUTS ── */
     section[data-testid="stMain"] .stTextInput input,
     section[data-testid="stMain"] input[type="text"],
-    section[data-testid="stMain"] input[type="password"]{
-        background:#f9fafb !important; color:#111827 !important;
-        -webkit-text-fill-color:#111827 !important; caret-color:#111827 !important;
-        border:1.5px solid #e5e7eb !important; border-radius:10px !important;
-        height:48px !important; font-size:14px !important; opacity:1 !important;
+    section[data-testid="stMain"] input[type="password"] {
+        background:#f8fafc !important; background-color:#f8fafc !important;
+        color:#111827 !important; -webkit-text-fill-color:#111827 !important;
+        caret-color:#111827 !important;
+        border:1.5px solid #e8ecf0 !important; border-radius:10px !important;
+        height:52px !important; font-size:15px !important;
+        padding:0 16px !important; opacity:1 !important;
+        font-family:'DM Sans',sans-serif !important;
     }
-    section[data-testid="stMain"] .stTextInput input:focus{
-        background:#fff !important; border-color:#6366f1 !important;
-        box-shadow:0 0 0 3px rgba(99,102,241,.15) !important;
+    section[data-testid="stMain"] .stTextInput input:focus {
+        background:#ffffff !important; background-color:#ffffff !important;
+        border-color:#4f46e5 !important;
+        box-shadow:0 0 0 3px rgba(79,70,229,.13) !important;
+    }
+    section[data-testid="stMain"] .stTextInput input::placeholder {
+        color:#adb5bd !important; -webkit-text-fill-color:#adb5bd !important;
     }
     section[data-testid="stMain"] div[data-baseweb="input"],
     section[data-testid="stMain"] div[data-baseweb="base-input"],
-    section[data-testid="stMain"] .stTextInput>div>div{background:#f9fafb !important; border-radius:10px !important;}
+    section[data-testid="stMain"] .stTextInput > div > div {
+        background:#f8fafc !important; border-radius:10px !important;
+    }
     section[data-testid="stMain"] .stTextInput label,
-    section[data-testid="stMain"] div[data-testid="stWidgetLabel"] p{
-        color:#374151 !important; -webkit-text-fill-color:#374151 !important;
-        font-weight:600 !important; font-size:13px !important;
+    section[data-testid="stMain"] div[data-testid="stWidgetLabel"] p {
+        color:#4b5563 !important; -webkit-text-fill-color:#4b5563 !important;
+        font-weight:600 !important; font-size:13.5px !important;
+        font-family:'DM Sans',sans-serif !important;
     }
-    .stFormSubmitButton>button{
-        background:linear-gradient(135deg,#4f46e5,#6366f1) !important; border:none !important;
-        color:#fff !important; -webkit-text-fill-color:#fff !important;
-        font-size:15px !important; font-weight:700 !important; height:50px !important;
-        border-radius:10px !important; box-shadow:0 4px 15px rgba(99,102,241,.4) !important;
+    /* ── BUTTON ── */
+    section[data-testid="stMain"] .stFormSubmitButton > button {
+        background:#4f46e5 !important; border:none !important;
+        color:#ffffff !important; -webkit-text-fill-color:#ffffff !important;
+        font-size:15.5px !important; font-weight:700 !important;
+        height:54px !important; border-radius:12px !important;
+        box-shadow:0 6px 20px rgba(79,70,229,.45) !important;
+        letter-spacing:.02em !important; width:100% !important;
+        font-family:'DM Sans',sans-serif !important;
     }
-    </style>""", unsafe_allow_html=True)
+    section[data-testid="stMain"] .stFormSubmitButton > button:hover {
+        background:#4338ca !important;
+        box-shadow:0 8px 28px rgba(79,70,229,.55) !important;
+    }
+    section[data-testid="stMain"] .stAlert { border-radius:10px !important; }
+    /* hide column gaps */
+    section[data-testid="stMain"] [data-testid="column"] { padding:0 !important; }
+    </style>
+    """, unsafe_allow_html=True)
 
-    sp(20)
-    _, col, _ = st.columns([1,1.2,1])
-    with col:
-        st.markdown("""
-        <div style="background:#fff;border-radius:20px;border:1px solid #e8ecf4;
-             box-shadow:0 4px 6px rgba(0,0,0,.04),0 20px 60px rgba(0,0,0,.1);overflow:hidden;">
-          <div style="height:4px;background:linear-gradient(90deg,#4f46e5,#818cf8,#06b6d4);"></div>
-          <div style="padding:36px 36px 20px;text-align:center;">
-            <div style="width:68px;height:68px;border-radius:16px;margin:0 auto 16px;
-                 background:linear-gradient(135deg,#312e81,#4f46e5);
-                 display:flex;align-items:center;justify-content:center;font-size:32px;
-                 box-shadow:0 6px 20px rgba(79,70,229,.35);">🏭</div>
-            <div style="font-size:22px;font-weight:800;color:#0f172a;">Supply Chain Tracking</div>
-            <div style="font-size:13px;color:#64748b;margin-top:6px;">Enterprise Procurement &amp; Order Management</div>
-          </div>
-          <div style="height:1px;background:#f1f5f9;margin:0 32px;"></div>
-          <div style="padding:20px 36px 4px;">
-            <div style="font-size:15px;font-weight:700;color:#1e293b;">Welcome back</div>
-            <div style="font-size:12.5px;color:#94a3b8;margin-top:3px;">Sign in to continue</div>
-          </div>
-        </div>""", unsafe_allow_html=True)
+    # ── PAGE WRAPPER — blue bg, vertically padded ──────────────────────────────
+    sp(48)
 
-        st.markdown('<div style="background:#fff;border-left:1px solid #e8ecf4;border-right:1px solid #e8ecf4;padding:8px 36px 4px;">',unsafe_allow_html=True)
-        with st.form("lf", clear_on_submit=False):
-            uname = st.text_input("Username", placeholder="Enter your username", key="lu")
-            sp(2)
-            pword = st.text_input("Password", placeholder="Enter your password", type="password", key="lp")
-            sp(10)
-            submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
-        st.markdown('</div>',unsafe_allow_html=True)
+    # outer centering columns
+    _l, mid, _r = st.columns([0.6, 4, 0.6])
+    with mid:
+        left_col, right_col = st.columns([1, 1], gap="small")
 
-        st.markdown("""<div style="background:#fff;border:1px solid #e8ecf4;border-top:none;
-             border-radius:0 0 20px 20px;padding:6px 36px 24px;box-shadow:0 20px 60px rgba(0,0,0,.1);">
-          <p style="text-align:center;font-size:11.5px;color:#94a3b8;margin:12px 0 0;">
-            🔒 Secured · Contact your administrator for access</p>
-        </div>""", unsafe_allow_html=True)
+        # ═══════════════════════════════════════════════════════
+        # LEFT PANEL — white, login form
+        # ═══════════════════════════════════════════════════════
+        with left_col:
+            # card top (branding)
+            st.markdown("""
+            <div style="
+                background:#ffffff;
+                border-radius:24px 0 0 0;
+                padding:44px 48px 0 48px;
+            ">
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:40px;">
+                <div style="width:42px;height:42px;border-radius:11px;flex-shrink:0;
+                     background:linear-gradient(135deg,#312e81,#4f46e5);
+                     display:flex;align-items:center;justify-content:center;font-size:20px;
+                     box-shadow:0 4px 12px rgba(79,70,229,.35);">🏭</div>
+                <div>
+                  <div style="font-size:13.5px;font-weight:800;color:#0f172a;letter-spacing:-.2px;
+                       font-family:'DM Sans',sans-serif;">Supply Chain</div>
+                  <div style="font-size:9.5px;color:#94a3b8;font-weight:500;
+                       letter-spacing:.8px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">
+                    Tracking System</div>
+                </div>
+              </div>
+              <div style="font-size:30px;font-weight:900;color:#0f172a;
+                   letter-spacing:-.5px;margin-bottom:6px;font-family:'DM Sans',sans-serif;">Login</div>
+              <div style="font-size:13.5px;color:#94a3b8;margin-bottom:28px;
+                   font-family:'DM Sans',sans-serif;">Sign in to manage your supply chain</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Streamlit form (sits inside the white card area via CSS)
+            st.markdown('<div style="background:#ffffff;padding:0 48px;">',
+                        unsafe_allow_html=True)
+            with st.form("lf", clear_on_submit=False):
+                uname = st.text_input("Username or Email",
+                                       placeholder="e.g. Admin", key="lu")
+                sp(8)
+                pword = st.text_input("Password",
+                                       placeholder="••••••••",
+                                       type="password", key="lp")
+                sp(20)
+                submitted = st.form_submit_button("Login",
+                                                   use_container_width=True,
+                                                   type="primary")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            # card bottom
+            st.markdown("""
+            <div style="
+                background:#ffffff;
+                border-radius:0 0 0 24px;
+                padding:20px 48px 40px;
+            ">
+              <div style="height:1px;background:#f1f5f9;margin-bottom:18px;"></div>
+              <div style="text-align:center;font-size:12.5px;color:#94a3b8;
+                   font-family:'DM Sans',sans-serif;">
+                🔒 &nbsp;Secured &nbsp;·&nbsp; Contact your administrator for access
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # ═══════════════════════════════════════════════════════
+        # RIGHT PANEL — light indigo, illustration
+        # ═══════════════════════════════════════════════════════
+        with right_col:
+            st.markdown("""
+            <div style="
+                background:linear-gradient(155deg,#e8eaf6 0%,#dde1f5 35%,#c5cdf0 100%);
+                border-radius:0 24px 24px 0;
+                padding:44px 36px 40px;
+                min-height:520px;
+                display:flex; flex-direction:column;
+                align-items:center; justify-content:center;
+                text-align:center; overflow:hidden; position:relative;
+            ">
+              <!-- Background blobs -->
+              <div style="position:absolute;top:-50px;right:-50px;width:180px;height:180px;
+                   border-radius:50%;background:rgba(99,102,241,.1);"></div>
+              <div style="position:absolute;bottom:-40px;left:-40px;width:140px;height:140px;
+                   border-radius:50%;background:rgba(79,70,229,.09);"></div>
+              <div style="position:absolute;top:40%;left:-20px;width:70px;height:70px;
+                   border-radius:50%;background:rgba(129,140,248,.12);"></div>
+
+              <!-- Main mockup window -->
+              <div style="position:relative;z-index:2;width:100%;max-width:260px;margin:0 auto 20px;">
+
+                <!-- Top floating badge -->
+                <div style="display:inline-flex;align-items:center;gap:6px;
+                     background:#4f46e5;border-radius:20px;padding:5px 14px;
+                     box-shadow:0 4px 14px rgba(79,70,229,.4);margin-bottom:12px;">
+                  <div style="width:6px;height:6px;border-radius:50%;background:#6ee7b7;"></div>
+                  <span style="font-size:11px;font-weight:700;color:#fff;
+                       font-family:'DM Sans',sans-serif;">Live Tracking Active</span>
+                </div>
+
+                <!-- Dashboard card mockup -->
+                <div style="background:#fff;border-radius:16px;padding:16px 18px;
+                     box-shadow:0 10px 36px rgba(79,70,229,.2);margin-bottom:12px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;
+                       margin-bottom:14px;">
+                    <div style="font-size:11px;font-weight:700;color:#0f172a;
+                         font-family:'DM Sans',sans-serif;">Order Analytics</div>
+                    <div style="display:flex;gap:3px;">
+                      <div style="width:5px;height:5px;border-radius:50%;background:#f87171;"></div>
+                      <div style="width:5px;height:5px;border-radius:50%;background:#fbbf24;"></div>
+                      <div style="width:5px;height:5px;border-radius:50%;background:#34d399;"></div>
+                    </div>
+                  </div>
+                  <!-- Search bar mock -->
+                  <div style="background:#f1f5f9;border-radius:7px;padding:6px 10px;
+                       font-size:10px;color:#94a3b8;margin-bottom:14px;text-align:left;
+                       font-family:'DM Sans',sans-serif;">🔍  Search orders...</div>
+                  <!-- Bar chart -->
+                  <div style="display:flex;align-items:flex-end;gap:5px;height:56px;
+                       margin-bottom:12px;padding:0 2px;">
+                    <div style="flex:1;background:linear-gradient(180deg,#6366f1,#4f46e5);
+                         border-radius:5px 5px 0 0;height:65%;"></div>
+                    <div style="flex:1;background:linear-gradient(180deg,#f59e0b,#d97706);
+                         border-radius:5px 5px 0 0;height:100%;"></div>
+                    <div style="flex:1;background:linear-gradient(180deg,#06b6d4,#0891b2);
+                         border-radius:5px 5px 0 0;height:50%;"></div>
+                    <div style="flex:1;background:linear-gradient(180deg,#10b981,#059669);
+                         border-radius:5px 5px 0 0;height:80%;"></div>
+                    <div style="flex:1;background:linear-gradient(180deg,#8b5cf6,#7c3aed);
+                         border-radius:5px 5px 0 0;height:60%;"></div>
+                  </div>
+                  <!-- KPI row -->
+                  <div style="display:flex;gap:5px;">
+                    <div style="flex:1;background:#f0fdf4;border-radius:6px;padding:5px 0;
+                         text-align:center;">
+                      <div style="font-size:11px;font-weight:800;color:#16a34a;
+                           font-family:'DM Sans',sans-serif;">12</div>
+                      <div style="font-size:8.5px;color:#86efac;font-family:'DM Sans',sans-serif;">
+                        Done</div>
+                    </div>
+                    <div style="flex:1;background:#eff6ff;border-radius:6px;padding:5px 0;
+                         text-align:center;">
+                      <div style="font-size:11px;font-weight:800;color:#2563eb;
+                           font-family:'DM Sans',sans-serif;">5</div>
+                      <div style="font-size:8.5px;color:#93c5fd;font-family:'DM Sans',sans-serif;">
+                        Transit</div>
+                    </div>
+                    <div style="flex:1;background:#fefce8;border-radius:6px;padding:5px 0;
+                         text-align:center;">
+                      <div style="font-size:11px;font-weight:800;color:#ca8a04;
+                           font-family:'DM Sans',sans-serif;">3</div>
+                      <div style="font-size:8.5px;color:#fde047;font-family:'DM Sans',sans-serif;">
+                        Pending</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Value card -->
+                <div style="background:#fff;border-radius:12px;padding:10px 14px;
+                     box-shadow:0 4px 16px rgba(0,0,0,.08);
+                     display:flex;align-items:center;gap:10px;">
+                  <div style="width:34px;height:34px;border-radius:9px;background:#f0fdf4;
+                       flex-shrink:0;display:flex;align-items:center;justify-content:center;
+                       font-size:17px;">📦</div>
+                  <div>
+                    <div style="font-size:11px;font-weight:700;color:#0f172a;
+                         font-family:'DM Sans',sans-serif;">₹34.0L Total Value</div>
+                    <div style="font-size:10px;color:#22c55e;font-weight:600;
+                         font-family:'DM Sans',sans-serif;">↑ 12% this month</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Caption text -->
+              <div style="position:relative;z-index:2;">
+                <div style="font-size:17px;font-weight:800;color:#1e293b;letter-spacing:-.2px;
+                     margin-bottom:8px;font-family:'DM Sans',sans-serif;">
+                  Check Your Project Progress</div>
+                <div style="font-size:12.5px;color:#64748b;line-height:1.65;
+                     max-width:210px;margin:0 auto;font-family:'DM Sans',sans-serif;">
+                  Monitor procurement, dispatch, delivery and payments — all in one place.</div>
+              </div>
+
+              <!-- Pagination dots -->
+              <div style="display:flex;gap:6px;margin-top:22px;position:relative;z-index:2;">
+                <div style="width:22px;height:5px;border-radius:3px;background:#4f46e5;"></div>
+                <div style="width:8px;height:5px;border-radius:3px;background:#c7d2fe;"></div>
+                <div style="width:8px;height:5px;border-radius:3px;background:#c7d2fe;"></div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # ── Error message below the card ───────────────────────────────────────
+        if st.session_state.get("login_error"):
+            sp(6)
+            st.error(st.session_state.login_error)
+
+    sp(48)
 
     if submitted:
-        u=uname.strip()
-        if u in USERS and USERS[u]["password"]==pword:
-            st.session_state.logged_in=True; st.session_state.username=u
-            st.session_state.role=USERS[u]["role"]; st.session_state.user_name=USERS[u]["name"]
-            st.session_state.page="Dashboard"; st.session_state.login_error=""
-            st.session_state.sb_open=True; st.rerun()
+        u = uname.strip()
+        if u in USERS and USERS[u]["password"] == pword:
+            st.session_state.logged_in   = True
+            st.session_state.username    = u
+            st.session_state.role        = USERS[u]["role"]
+            st.session_state.user_name   = USERS[u]["name"]
+            st.session_state.page        = "Dashboard"
+            st.session_state.login_error = ""
+            st.session_state.sb_open     = True
+            st.rerun()
         else:
-            st.session_state.login_error="⚠️ Invalid username or password."; st.rerun()
-    if st.session_state.login_error:
-        _,ec,_=st.columns([1,1.2,1])
-        with ec: st.error(st.session_state.login_error)
-
+            st.session_state.login_error = "⚠️  Invalid username or password. Please try again."
+            st.rerun()
 
 # ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 def render_sidebar():
