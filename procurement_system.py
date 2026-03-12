@@ -392,17 +392,23 @@ def login_page():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
 
-    /* ── FULL PAGE LOCK — no scroll, centered ── */
-    html, body { height:100% !important; margin:0 !important; overflow:hidden !important; }
+    /* ══ FULL VIEWPORT — purple gradient bg, absolutely no scroll ══ */
+    html, body {
+        height:100% !important; width:100% !important;
+        margin:0 !important; padding:0 !important;
+        overflow:hidden !important;
+    }
     .stApp {
-        height:100vh !important; overflow:hidden !important;
-        background:#3730a3 !important;
+        min-height:100vh !important; height:100vh !important;
+        width:100vw !important; overflow:hidden !important;
+        background: linear-gradient(135deg,#4338ca 0%,#6d28d9 50%,#7c3aed 100%) !important;
         display:flex !important; align-items:center !important; justify-content:center !important;
+        font-family:'DM Sans',sans-serif !important;
     }
     section[data-testid="stSidebar"],
     [data-testid="collapsedControl"] { display:none !important; width:0 !important; }
+    #MainMenu, footer, header { display:none !important; visibility:hidden !important; }
 
-    /* Make Streamlit's root containers transparent and centered */
     .block-container {
         padding:0 !important; margin:0 !important;
         max-width:100% !important; width:100% !important;
@@ -410,169 +416,170 @@ def login_page():
     }
     section[data-testid="stMain"] {
         height:100vh !important; overflow:hidden !important;
-        display:flex !important; align-items:center !important; justify-content:center !important;
     }
     section[data-testid="stMain"] > div {
-        padding:0 !important; width:100% !important;
         height:100vh !important; overflow:hidden !important;
+        padding:0 !important;
         display:flex !important; align-items:center !important; justify-content:center !important;
     }
     section[data-testid="stMain"] > div > div {
-        width:100% !important; max-width:520px !important;
+        width:100% !important;
+        display:flex !important; align-items:center !important; justify-content:center !important;
     }
 
-    /* ── UNIFIED CARD — all three column sections share one look ── */
-    /* The card bg is white; stForm sits on white */
-    [data-testid="column"] { padding:0 !important; gap:0 !important; }
-
-    /* ── FORM CONTAINER BACKGROUND: white, seamless ── */
-    .stForm {
-        background:#ffffff !important;
-        border:none !important;
-        padding:0 40px !important;
-        box-shadow:none !important;
-    }
-
-    /* ── LABELS: dark readable on white ── */
-    .stTextInput label,
-    div[data-testid="stWidgetLabel"] p,
-    div[data-testid="stWidgetLabel"] label {
-        color:#1e293b !important;
-        -webkit-text-fill-color:#1e293b !important;
-        font-size:13.5px !important; font-weight:700 !important;
-        font-family:'DM Sans',sans-serif !important;
-        letter-spacing:.01em !important;
-    }
-
-    /* ── INPUT FIELDS ── */
+    /* ══ INPUTS — glassmorphism style, placeholder only ══ */
     .stTextInput input,
     input[type="text"],
     input[type="password"] {
-        background:#f1f5f9 !important; background-color:#f1f5f9 !important;
-        color:#0f172a !important; -webkit-text-fill-color:#0f172a !important;
-        caret-color:#0f172a !important;
-        border:1.5px solid #e2e8f0 !important;
-        border-radius:10px !important;
-        height:52px !important; font-size:15px !important;
-        padding:0 16px !important; opacity:1 !important;
+        background:rgba(255,255,255,0.15) !important;
+        background-color:rgba(255,255,255,0.15) !important;
+        color:#ffffff !important;
+        -webkit-text-fill-color:#ffffff !important;
+        caret-color:#ffffff !important;
+        border:1px solid rgba(255,255,255,0.3) !important;
+        border-radius:12px !important;
+        height:52px !important;
+        font-size:15px !important;
+        padding:0 18px !important;
+        opacity:1 !important;
         font-family:'DM Sans',sans-serif !important;
+        backdrop-filter:blur(4px) !important;
+        -webkit-backdrop-filter:blur(4px) !important;
+        transition:border-color .2s, background .2s !important;
     }
-    .stTextInput input::placeholder { color:#9ca3af !important; -webkit-text-fill-color:#9ca3af !important; }
+    .stTextInput input::placeholder {
+        color:rgba(255,255,255,0.6) !important;
+        -webkit-text-fill-color:rgba(255,255,255,0.6) !important;
+    }
     .stTextInput input:focus {
-        background:#ffffff !important; background-color:#ffffff !important;
-        border-color:#4f46e5 !important;
-        box-shadow:0 0 0 3px rgba(79,70,229,.14) !important;
+        background:rgba(255,255,255,0.22) !important;
+        background-color:rgba(255,255,255,0.22) !important;
+        border-color:rgba(255,255,255,0.7) !important;
+        box-shadow:0 0 0 3px rgba(255,255,255,0.12) !important;
         outline:none !important;
+        color:#ffffff !important;
+        -webkit-text-fill-color:#ffffff !important;
     }
-    div[data-baseweb="input"], div[data-baseweb="base-input"],
+    div[data-baseweb="input"],
+    div[data-baseweb="base-input"],
     .stTextInput > div > div {
-        background:#f1f5f9 !important; border-radius:10px !important; border:none !important;
+        background:transparent !important;
+        border:none !important;
+        border-radius:12px !important;
     }
 
-    /* ── LOGIN BUTTON ── */
+    /* HIDE labels — placeholders carry the label */
+    .stTextInput label,
+    div[data-testid="stWidgetLabel"] p,
+    div[data-testid="stWidgetLabel"] label {
+        display:none !important;
+        height:0 !important; margin:0 !important; padding:0 !important;
+    }
+
+    /* ══ SIGN IN BUTTON ══ */
     .stFormSubmitButton > button {
-        background:#4f46e5 !important; border:none !important;
+        background:linear-gradient(135deg,#3b82f6,#2563eb) !important;
+        border:none !important;
         color:#ffffff !important; -webkit-text-fill-color:#ffffff !important;
         font-size:16px !important; font-weight:700 !important;
-        height:54px !important; border-radius:12px !important;
-        box-shadow:0 6px 22px rgba(79,70,229,.4) !important;
-        width:100% !important; letter-spacing:.03em !important;
+        height:52px !important; border-radius:12px !important;
+        box-shadow:0 6px 24px rgba(37,99,235,.5) !important;
+        width:100% !important; letter-spacing:.04em !important;
         font-family:'DM Sans',sans-serif !important;
         transition:all .2s !important;
     }
     .stFormSubmitButton > button:hover {
-        background:#4338ca !important;
-        box-shadow:0 8px 28px rgba(79,70,229,.55) !important;
+        background:linear-gradient(135deg,#2563eb,#1d4ed8) !important;
+        box-shadow:0 8px 32px rgba(37,99,235,.65) !important;
+        transform:translateY(-1px) !important;
     }
 
-    /* ── HIDE STREAMLIT CHROME ── */
-    #MainMenu, footer, header { display:none !important; }
-    .stAlert { border-radius:10px !important; margin-top:8px !important; }
+    /* ══ FORM — transparent, no chrome ══ */
+    [data-testid="stForm"], .stForm, section form {
+        background:transparent !important;
+        border:none !important; box-shadow:none !important;
+        padding:0 !important;
+    }
+
+    /* columns gap */
+    [data-testid="column"] { padding:0 !important; }
+
+    /* error */
+    .stAlert { border-radius:12px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    # ── SINGLE CENTERED COLUMN ──────────────────────────────────────────────────
-    _, col, _ = st.columns([1, 2.2, 1])
+    # ── SINGLE CENTERED COLUMN ─────────────────────────────────────────────────
+    _, col, _ = st.columns([1, 1.6, 1])
     with col:
-
-        # ── TOP OF CARD: white, logo + heading ────────────────────────────────
+        # ── GLASS CARD (entire card is one HTML block) ─────────────────────────
         st.markdown("""
         <div style="
-            background:#ffffff;
-            border-radius:20px 20px 0 0;
-            padding:36px 40px 28px;
-            border:1px solid rgba(255,255,255,.15);
-            border-bottom:1px solid #f1f5f9;
-            box-shadow:0 2px 0 rgba(0,0,0,.04);
+            background:rgba(255,255,255,0.12);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,0.22);
+            border-radius:24px;
+            padding:44px 44px 14px;
+            box-shadow:0 24px 64px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.18);
         ">
-          <!-- Logo -->
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:30px;">
-            <div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;
-                 background:linear-gradient(135deg,#312e81,#4f46e5);
-                 display:flex;align-items:center;justify-content:center;font-size:24px;
-                 box-shadow:0 4px 14px rgba(79,70,229,.4);">🏭</div>
-            <div>
-              <div style="font-size:15.5px;font-weight:800;color:#0f172a;
-                   font-family:'DM Sans',sans-serif;letter-spacing:-.2px;">Supply Chain</div>
-              <div style="font-size:10px;color:#94a3b8;font-weight:500;
-                   letter-spacing:.9px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">
-                Tracking System</div>
-            </div>
-          </div>
-
           <!-- Heading -->
-          <div style="font-size:32px;font-weight:900;color:#0f172a;letter-spacing:-.5px;
-               margin-bottom:6px;font-family:'DM Sans',sans-serif;line-height:1.1;">Login</div>
-          <div style="font-size:14px;color:#64748b;font-family:'DM Sans',sans-serif;">
-            Sign in to manage your supply chain</div>
+          <div style="text-align:center;margin-bottom:6px;">
+            <div style="font-size:30px;font-weight:900;color:#ffffff;
+                 letter-spacing:-.4px;font-family:'DM Sans',sans-serif;line-height:1.1;">
+              Welcome Back</div>
+            <div style="font-size:14px;color:rgba(255,255,255,0.65);margin-top:8px;
+                 font-family:'DM Sans',sans-serif;font-weight:400;">
+              Sign in to your account</div>
+          </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # ── FORM SECTION: white, seamless middle ──────────────────────────────
+        # ── Streamlit form (below the heading HTML, inside same card visual) ──
         st.markdown("""
-        <div style="background:#ffffff;padding:28px 0 0;
-             border-left:1px solid rgba(255,255,255,.15);
-             border-right:1px solid rgba(255,255,255,.15);">
+        <div style="
+            background:rgba(255,255,255,0.12);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border-left:1px solid rgba(255,255,255,0.22);
+            border-right:1px solid rgba(255,255,255,0.22);
+            padding:28px 44px 0;
+            margin-top:-2px;
+        ">
         </div>""", unsafe_allow_html=True)
 
         with st.form("lf", clear_on_submit=False):
-            # Override: force form bg white
-            st.markdown("""<style>
-            section[data-testid="stMain"] [data-testid="stForm"],
-            section[data-testid="stMain"] .stForm,
-            section[data-testid="stMain"] form {
-                background:#ffffff !important;
-                padding:0 40px !important;
-                border:none !important;
-                box-shadow:none !important;
-            }
-            </style>""", unsafe_allow_html=True)
-
-            uname = st.text_input("Username or Email", placeholder="e.g. Admin", key="lu")
+            uname = st.text_input("u", placeholder="Email Address", key="lu",
+                                   label_visibility="collapsed")
             sp(10)
-            pword = st.text_input("Password", placeholder="Enter your password",
-                                   type="password", key="lp")
+            pword = st.text_input("p", placeholder="Password",
+                                   type="password", key="lp",
+                                   label_visibility="collapsed")
             sp(20)
-            submitted = st.form_submit_button("Login →",
+            submitted = st.form_submit_button("Sign In",
                                                use_container_width=True, type="primary")
 
-        # ── FOOTER: rounded bottom ─────────────────────────────────────────────
+        # ── Bottom of card ──────────────────────────────────────────────────
         st.markdown("""
         <div style="
-            background:#f8fafc;
-            border-radius:0 0 20px 20px;
-            padding:18px 40px 24px;
-            border:1px solid rgba(255,255,255,.15);
-            border-top:1px solid #f1f5f9;
+            background:rgba(255,255,255,0.12);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
+            border-left:1px solid rgba(255,255,255,0.22);
+            border-right:1px solid rgba(255,255,255,0.22);
+            border-bottom:1px solid rgba(255,255,255,0.22);
+            border-radius:0 0 24px 24px;
+            padding:6px 44px 32px;
+            margin-top:-4px;
             text-align:center;
         ">
-          <span style="font-size:13px;color:#94a3b8;font-family:'DM Sans',sans-serif;">
+          <div style="height:1px;background:rgba(255,255,255,0.12);margin-bottom:18px;"></div>
+          <span style="font-size:12.5px;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;">
             🔒 &nbsp;Secured &nbsp;·&nbsp; Contact your administrator for access
           </span>
         </div>
         """, unsafe_allow_html=True)
 
-        # Error
         if st.session_state.get("login_error"):
             sp(8)
             st.error(st.session_state.login_error)
