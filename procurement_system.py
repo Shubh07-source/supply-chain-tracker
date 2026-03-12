@@ -33,7 +33,7 @@ USERS = {
     "Admin":   {"password":"admin@123",    "role":"Admin",   "name":"System Admin"},
     "Manager": {"password":"mgr@123",      "role":"Manager", "name":"Ops Manager"},
     "Staff":   {"password":"Ops@Secure#1", "role":"Staff",   "name":"Operations Staff"},
-    "Viewer":  {"password":"view@123",      "role":"Viewer",  "name":"Viewer"},
+    "Viewer":  {"password":"view123",      "role":"Viewer",  "name":"Finance Viewer"},
 }
 MENUS = {
     "Admin":   ["Dashboard","New Order","Update Order","Order Details","Activity Log","Reports","Manage Records","Admin Panel"],
@@ -394,10 +394,10 @@ def login_page():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
 
-    /* 1. Full-viewport purple gradient, no scroll */
+    /* 1. Full-viewport white bg, no scroll */
     html, body { overflow:hidden !important; height:100% !important; margin:0 !important; }
     .stApp {
-        background: linear-gradient(135deg, #3730a3 0%, #5b21b6 50%, #7c3aed 100%) !important;
+        background: #f1f5f9 !important;
         height:100vh !important; overflow:hidden !important;
         font-family:'DM Sans',sans-serif !important;
     }
@@ -418,25 +418,22 @@ def login_page():
         width:100% !important; max-width:460px !important;
     }
 
-    /* 3. The heading HTML block — glass top */
+    /* 3. The heading HTML block — card top */
     .login-card-top {
-        background: rgba(255,255,255,0.13) !important;
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        border: 1px solid rgba(255,255,255,0.25) !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
         border-bottom: none !important;
         border-radius: 22px 22px 0 0 !important;
         padding: 40px 40px 28px !important;
         text-align: center !important;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important;
     }
 
-    /* 4. The stForm element IS the glass card middle */
+    /* 4. The stForm element IS the card middle */
     section[data-testid="stForm"],
     div[data-testid="stForm"] {
-        background: rgba(255,255,255,0.13) !important;
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        border: 1px solid rgba(255,255,255,0.25) !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
         border-top: none !important;
         border-bottom: none !important;
         border-radius: 0 !important;
@@ -444,28 +441,27 @@ def login_page():
         box-shadow: none !important;
     }
 
-    /* 5. Footer HTML block — glass bottom */
+    /* 5. Footer HTML block — card bottom */
     .login-card-bottom {
-        background: rgba(255,255,255,0.10) !important;
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        border: 1px solid rgba(255,255,255,0.25) !important;
-        border-top: 1px solid rgba(255,255,255,0.12) !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-top: 1px solid #f1f5f9 !important;
         border-radius: 0 0 22px 22px !important;
         padding: 18px 40px 26px !important;
         text-align: center !important;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important;
     }
 
-    /* 6. INPUTS — glass style, white text */
+    /* 6. INPUTS — clean light style */
     section[data-testid="stForm"] input[type="text"],
     section[data-testid="stForm"] input[type="password"],
     section[data-testid="stForm"] .stTextInput input {
-        background: rgba(255,255,255,0.18) !important;
-        background-color: rgba(255,255,255,0.18) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        caret-color: #ffffff !important;
-        border: 1.5px solid rgba(255,255,255,0.35) !important;
+        background: #f8fafc !important;
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        caret-color: #0f172a !important;
+        border: 1.5px solid #e2e8f0 !important;
         border-radius: 12px !important;
         height: 52px !important;
         font-size: 15px !important;
@@ -476,14 +472,14 @@ def login_page():
         box-sizing: border-box !important;
     }
     section[data-testid="stForm"] input::placeholder {
-        color: rgba(255,255,255,0.55) !important;
-        -webkit-text-fill-color: rgba(255,255,255,0.55) !important;
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
     }
     section[data-testid="stForm"] input:focus {
-        background: rgba(255,255,255,0.25) !important;
-        background-color: rgba(255,255,255,0.25) !important;
-        border-color: rgba(255,255,255,0.7) !important;
-        box-shadow: 0 0 0 3px rgba(255,255,255,0.1) !important;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.12) !important;
         outline: none !important;
     }
     section[data-testid="stForm"] div[data-baseweb="input"],
@@ -494,11 +490,16 @@ def login_page():
         border-radius: 12px !important;
     }
 
-    /* 7. HIDE labels (placeholders serve as labels) */
+    /* 7. LABELS — dark on white */
     section[data-testid="stForm"] .stTextInput label,
-    section[data-testid="stForm"] div[data-testid="stWidgetLabel"] {
-        display: none !important;
-        height: 0 !important; margin: 0 !important; padding: 0 !important;
+    section[data-testid="stForm"] div[data-testid="stWidgetLabel"],
+    section[data-testid="stForm"] div[data-testid="stWidgetLabel"] p {
+        display:block !important;
+        color: #1e293b !important;
+        -webkit-text-fill-color: #1e293b !important;
+        font-size: 13.5px !important; font-weight: 700 !important;
+        font-family: 'DM Sans',sans-serif !important;
+        opacity: 1 !important;
     }
 
     /* 8. SIGN IN BUTTON */
@@ -529,35 +530,21 @@ def login_page():
              display:flex;align-items:center;justify-content:center;font-size:23px;
              box-shadow:0 4px 14px rgba(79,70,229,0.45);">🏭</div>
         <div style="text-align:left;">
-          <div style="font-size:15px;font-weight:800;color:#ffffff;letter-spacing:-.1px;
+          <div style="font-size:15px;font-weight:800;color:#0f172a;letter-spacing:-.1px;
                font-family:'DM Sans',sans-serif;">Supply Chain</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.55);font-weight:500;
+          <div style="font-size:10px;color:#94a3b8;font-weight:500;
                letter-spacing:.9px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">
             Tracking System</div>
         </div>
       </div>
-      <div style="font-size:28px;font-weight:900;color:#ffffff;letter-spacing:-.4px;
+      <div style="font-size:28px;font-weight:900;color:#0f172a;letter-spacing:-.4px;
            margin-bottom:6px;font-family:'DM Sans',sans-serif;">Welcome Back</div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.6);
+      <div style="font-size:14px;color:#64748b;
            font-family:'DM Sans',sans-serif;">Sign in to your account</div>
     </div>
     """, unsafe_allow_html=True)
 
     # ── FORM (Streamlit stForm = glass card middle, styled via CSS above) ─────
-    # Make labels visible and white
-    st.markdown("""<style>
-    section[data-testid="stForm"] .stTextInput label,
-    section[data-testid="stForm"] div[data-testid="stWidgetLabel"],
-    section[data-testid="stForm"] div[data-testid="stWidgetLabel"] p {
-        display:block !important;
-        height:auto !important; margin-bottom:6px !important;
-        color:#ffffff !important;
-        -webkit-text-fill-color:#ffffff !important;
-        font-size:13.5px !important; font-weight:700 !important;
-        font-family:'DM Sans',sans-serif !important;
-        opacity:1 !important;
-    }
-    </style>""", unsafe_allow_html=True)
     with st.form("lf", clear_on_submit=False):
         uname = st.text_input("Username", placeholder="Enter your username",
                                key="lu")
@@ -571,7 +558,7 @@ def login_page():
     # ── FOOTER ─────────────────────────────────────────────────────────────────
     st.markdown("""
     <div class="login-card-bottom">
-      <span style="font-size:12.5px;color:rgba(255,255,255,0.45);
+      <span style="font-size:12.5px;color:#94a3b8;
            font-family:'DM Sans',sans-serif;">
         🔒 &nbsp;Secured &nbsp;·&nbsp; Contact your administrator for access
       </span>
