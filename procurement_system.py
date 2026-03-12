@@ -33,7 +33,7 @@ USERS = {
     "Admin":   {"password":"admin@123",    "role":"Admin",   "name":"System Admin"},
     "Manager": {"password":"mgr@123",      "role":"Manager", "name":"Ops Manager"},
     "Staff":   {"password":"Ops@Secure#1", "role":"Staff",   "name":"Operations Staff"},
-    "Viewer":  {"password":"view123",      "role":"Viewer",  "name":"Finance Viewer"},
+    "Viewer":  {"password":"view@123",      "role":"Viewer",  "name":"Viewer"},
 }
 MENUS = {
     "Admin":   ["Dashboard","New Order","Update Order","Order Details","Activity Log","Reports","Manage Records","Admin Panel"],
