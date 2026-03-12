@@ -390,147 +390,185 @@ def topbar(title, sub=""):
 def login_page():
     st.markdown("""
     <style>
-    /* ── LOCK PAGE — no scroll, full viewport, centered ── */
-    html, body, .stApp {
-        height:100% !important;
-        overflow:hidden !important;
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+
+    /* ── FULL PAGE LOCK — no scroll, centered ── */
+    html, body { height:100% !important; margin:0 !important; overflow:hidden !important; }
+    .stApp {
+        height:100vh !important; overflow:hidden !important;
         background:#3730a3 !important;
+        display:flex !important; align-items:center !important; justify-content:center !important;
     }
     section[data-testid="stSidebar"],
     [data-testid="collapsedControl"] { display:none !important; width:0 !important; }
+
+    /* Make Streamlit's root containers transparent and centered */
     .block-container {
-        padding:0 !important; max-width:100% !important;
+        padding:0 !important; margin:0 !important;
+        max-width:100% !important; width:100% !important;
         height:100vh !important; overflow:hidden !important;
     }
+    section[data-testid="stMain"] {
+        height:100vh !important; overflow:hidden !important;
+        display:flex !important; align-items:center !important; justify-content:center !important;
+    }
     section[data-testid="stMain"] > div {
-        padding:0 !important;
-        height:100vh !important;
-        display:flex !important;
-        align-items:center !important;
-        justify-content:center !important;
-        overflow:hidden !important;
+        padding:0 !important; width:100% !important;
+        height:100vh !important; overflow:hidden !important;
+        display:flex !important; align-items:center !important; justify-content:center !important;
+    }
+    section[data-testid="stMain"] > div > div {
+        width:100% !important; max-width:520px !important;
     }
 
-    /* ── INPUTS: dark readable labels & text ── */
-    section[data-testid="stMain"] .stTextInput label,
-    section[data-testid="stMain"] div[data-testid="stWidgetLabel"] p {
+    /* ── UNIFIED CARD — all three column sections share one look ── */
+    /* The card bg is white; stForm sits on white */
+    [data-testid="column"] { padding:0 !important; gap:0 !important; }
+
+    /* ── FORM CONTAINER BACKGROUND: white, seamless ── */
+    .stForm {
+        background:#ffffff !important;
+        border:none !important;
+        padding:0 40px !important;
+        box-shadow:none !important;
+    }
+
+    /* ── LABELS: dark readable on white ── */
+    .stTextInput label,
+    div[data-testid="stWidgetLabel"] p,
+    div[data-testid="stWidgetLabel"] label {
         color:#1e293b !important;
         -webkit-text-fill-color:#1e293b !important;
-        font-size:14px !important;
-        font-weight:700 !important;
+        font-size:13.5px !important; font-weight:700 !important;
         font-family:'DM Sans',sans-serif !important;
+        letter-spacing:.01em !important;
     }
-    section[data-testid="stMain"] .stTextInput input,
-    section[data-testid="stMain"] input[type="text"],
-    section[data-testid="stMain"] input[type="password"] {
+
+    /* ── INPUT FIELDS ── */
+    .stTextInput input,
+    input[type="text"],
+    input[type="password"] {
         background:#f1f5f9 !important; background-color:#f1f5f9 !important;
         color:#0f172a !important; -webkit-text-fill-color:#0f172a !important;
         caret-color:#0f172a !important;
-        border:1.5px solid #dde3ed !important; border-radius:10px !important;
+        border:1.5px solid #e2e8f0 !important;
+        border-radius:10px !important;
         height:52px !important; font-size:15px !important;
         padding:0 16px !important; opacity:1 !important;
+        font-family:'DM Sans',sans-serif !important;
     }
-    section[data-testid="stMain"] .stTextInput input::placeholder {
-        color:#9ca3af !important; -webkit-text-fill-color:#9ca3af !important;
-    }
-    section[data-testid="stMain"] .stTextInput input:focus {
+    .stTextInput input::placeholder { color:#9ca3af !important; -webkit-text-fill-color:#9ca3af !important; }
+    .stTextInput input:focus {
         background:#ffffff !important; background-color:#ffffff !important;
         border-color:#4f46e5 !important;
-        box-shadow:0 0 0 3px rgba(79,70,229,.15) !important;
+        box-shadow:0 0 0 3px rgba(79,70,229,.14) !important;
+        outline:none !important;
     }
-    section[data-testid="stMain"] div[data-baseweb="input"],
-    section[data-testid="stMain"] div[data-baseweb="base-input"],
-    section[data-testid="stMain"] .stTextInput > div > div {
-        background:#f1f5f9 !important; border-radius:10px !important;
+    div[data-baseweb="input"], div[data-baseweb="base-input"],
+    .stTextInput > div > div {
+        background:#f1f5f9 !important; border-radius:10px !important; border:none !important;
     }
 
     /* ── LOGIN BUTTON ── */
-    section[data-testid="stMain"] .stFormSubmitButton > button {
+    .stFormSubmitButton > button {
         background:#4f46e5 !important; border:none !important;
         color:#ffffff !important; -webkit-text-fill-color:#ffffff !important;
         font-size:16px !important; font-weight:700 !important;
         height:54px !important; border-radius:12px !important;
-        box-shadow:0 6px 20px rgba(79,70,229,.45) !important;
-        letter-spacing:.02em !important;
+        box-shadow:0 6px 22px rgba(79,70,229,.4) !important;
+        width:100% !important; letter-spacing:.03em !important;
+        font-family:'DM Sans',sans-serif !important;
+        transition:all .2s !important;
     }
-    section[data-testid="stMain"] .stFormSubmitButton > button:hover {
+    .stFormSubmitButton > button:hover {
         background:#4338ca !important;
+        box-shadow:0 8px 28px rgba(79,70,229,.55) !important;
     }
-    /* ── COLUMN PADDING RESET ── */
-    [data-testid="column"] { padding:0 !important; }
+
+    /* ── HIDE STREAMLIT CHROME ── */
+    #MainMenu, footer, header { display:none !important; }
+    .stAlert { border-radius:10px !important; margin-top:8px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    # ── CENTERED CARD ─────────────────────────────────────────────────────────
-    _, card_col, _ = st.columns([1, 1.4, 1])
-    with card_col:
-        # TOP — white branding bar
+    # ── SINGLE CENTERED COLUMN ──────────────────────────────────────────────────
+    _, col, _ = st.columns([1, 2.2, 1])
+    with col:
+
+        # ── TOP OF CARD: white, logo + heading ────────────────────────────────
         st.markdown("""
         <div style="
             background:#ffffff;
-            border-radius:18px 18px 0 0;
-            border:1px solid #e2e8f0; border-bottom:none;
-            padding:28px 36px 24px;
+            border-radius:20px 20px 0 0;
+            padding:36px 40px 28px;
+            border:1px solid rgba(255,255,255,.15);
+            border-bottom:1px solid #f1f5f9;
+            box-shadow:0 2px 0 rgba(0,0,0,.04);
         ">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
-            <div style="width:44px;height:44px;border-radius:11px;flex-shrink:0;
+          <!-- Logo -->
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:30px;">
+            <div style="width:46px;height:46px;border-radius:12px;flex-shrink:0;
                  background:linear-gradient(135deg,#312e81,#4f46e5);
-                 display:flex;align-items:center;justify-content:center;font-size:22px;
-                 box-shadow:0 4px 12px rgba(79,70,229,.35);">🏭</div>
+                 display:flex;align-items:center;justify-content:center;font-size:24px;
+                 box-shadow:0 4px 14px rgba(79,70,229,.4);">🏭</div>
             <div>
-              <div style="font-size:15px;font-weight:800;color:#0f172a;letter-spacing:-.2px;">
-                Supply Chain</div>
+              <div style="font-size:15.5px;font-weight:800;color:#0f172a;
+                   font-family:'DM Sans',sans-serif;letter-spacing:-.2px;">Supply Chain</div>
               <div style="font-size:10px;color:#94a3b8;font-weight:500;
-                   letter-spacing:.8px;text-transform:uppercase;">Tracking System</div>
+                   letter-spacing:.9px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">
+                Tracking System</div>
             </div>
           </div>
-          <div style="font-size:30px;font-weight:900;color:#0f172a;letter-spacing:-.4px;
-               margin-bottom:5px;">Login</div>
-          <div style="font-size:13.5px;color:#64748b;">Sign in to manage your supply chain</div>
+
+          <!-- Heading -->
+          <div style="font-size:32px;font-weight:900;color:#0f172a;letter-spacing:-.5px;
+               margin-bottom:6px;font-family:'DM Sans',sans-serif;line-height:1.1;">Login</div>
+          <div style="font-size:14px;color:#64748b;font-family:'DM Sans',sans-serif;">
+            Sign in to manage your supply chain</div>
         </div>
         """, unsafe_allow_html=True)
 
-        # MIDDLE — form on indigo bg
+        # ── FORM SECTION: white, seamless middle ──────────────────────────────
         st.markdown("""
-        <div style="background:#3730a3;padding:24px 36px 20px;
-             border-left:1px solid rgba(255,255,255,.12);
-             border-right:1px solid rgba(255,255,255,.12);">
-        </div>
-        """, unsafe_allow_html=True)
+        <div style="background:#ffffff;padding:28px 0 0;
+             border-left:1px solid rgba(255,255,255,.15);
+             border-right:1px solid rgba(255,255,255,.15);">
+        </div>""", unsafe_allow_html=True)
 
-        # Streamlit form (background matched via CSS)
-        st.markdown('<div style="background:#3730a3;padding:0 36px;">', unsafe_allow_html=True)
-        # Override label color to white inside this section for readability on dark bg
-        st.markdown("""<style>
-        section[data-testid="stMain"] .stTextInput label,
-        section[data-testid="stMain"] div[data-testid="stWidgetLabel"] p {
-            color:#ffffff !important;
-            -webkit-text-fill-color:#ffffff !important;
-            font-weight:700 !important; font-size:14px !important;
-        }
-        </style>""", unsafe_allow_html=True)
         with st.form("lf", clear_on_submit=False):
-            uname = st.text_input("Username or Email", placeholder="e.g. Admin", key="lu")
-            sp(8)
-            pword = st.text_input("Password", placeholder="••••••••",
-                                   type="password", key="lp")
-            sp(18)
-            submitted = st.form_submit_button("Login",
-                                               use_container_width=True, type="primary")
-        st.markdown('</div>', unsafe_allow_html=True)
+            # Override: force form bg white
+            st.markdown("""<style>
+            section[data-testid="stMain"] [data-testid="stForm"],
+            section[data-testid="stMain"] .stForm,
+            section[data-testid="stMain"] form {
+                background:#ffffff !important;
+                padding:0 40px !important;
+                border:none !important;
+                box-shadow:none !important;
+            }
+            </style>""", unsafe_allow_html=True)
 
-        # BOTTOM — footer bar
+            uname = st.text_input("Username or Email", placeholder="e.g. Admin", key="lu")
+            sp(10)
+            pword = st.text_input("Password", placeholder="Enter your password",
+                                   type="password", key="lp")
+            sp(20)
+            submitted = st.form_submit_button("Login →",
+                                               use_container_width=True, type="primary")
+
+        # ── FOOTER: rounded bottom ─────────────────────────────────────────────
         st.markdown("""
         <div style="
             background:#f8fafc;
-            border-radius:0 0 18px 18px;
-            border:1px solid #e2e8f0; border-top:none;
-            padding:18px 36px 22px;
+            border-radius:0 0 20px 20px;
+            padding:18px 40px 24px;
+            border:1px solid rgba(255,255,255,.15);
+            border-top:1px solid #f1f5f9;
             text-align:center;
         ">
-          <div style="font-size:12.5px;color:#64748b;">
+          <span style="font-size:13px;color:#94a3b8;font-family:'DM Sans',sans-serif;">
             🔒 &nbsp;Secured &nbsp;·&nbsp; Contact your administrator for access
-          </div>
+          </span>
         </div>
         """, unsafe_allow_html=True)
 
