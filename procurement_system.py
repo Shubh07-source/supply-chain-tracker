@@ -130,9 +130,26 @@ def now_ist():
 def load_data():
     seed = make_seed(); out = {}
     for k,path in FILES.items():
-        if os.path.exists(path): out[k] = pd.read_csv(path,dtype=str).fillna("")
-        else: d=seed[k].copy(); d.to_csv(path,index=False); out[k]=d
+        if os.path.exists(path):
+            out[k] = pd.read_csv(path,dtype=str).fillna("")
+        else:
+            d=seed[k].copy(); d.to_csv(path,index=False); out[k]=d
     return out
+
+def ensure_tables():
+    """Called at start of each new-module page — creates any missing tables on live deployments."""
+    seed = make_seed()
+    D = st.session_state.D
+    changed = False
+    for k in ["vendors","vendor_payments","items","approvals"]:
+        if k not in D:
+            if os.path.exists(FILES[k]):
+                D[k] = pd.read_csv(FILES[k],dtype=str).fillna("")
+            else:
+                d = seed[k].copy(); d.to_csv(FILES[k],index=False); D[k] = d
+            changed = True
+    if changed:
+        st.session_state.D = D
 
 def save(k): st.session_state.D[k].to_csv(FILES[k], index=False)
 
@@ -719,31 +736,93 @@ def _log_row(log):
 
 # ─── DASHBOARD ────────────────────────────────────────────────────────────────
 def page_dashboard():
+    ensure_tables()
     try:
         import plotly.graph_objects as go
         HAS_PLOTLY=True
     except ImportError:
         HAS_PLOTLY=False
 
-    topbar("📊 Dashboard","Real-time overview of all purchase orders and supply chain status")
+    topbar("📊 Dashboard","Real-time procurement overview")
     D=st.session_state.D; df=D["orders"].copy()
-    cf=st.session_state.co_filter
-    fil=df if cf=="All" else df[df["company"]==cf]
-    tv=fil["total_value"].astype(float).sum() if len(fil) else 0.0
+    df["total_value"]=df["total_value"].astype(float)
+    tv=df["total_value"].sum()
+    paid_tv=df[df["current_status"]=="Paid"]["total_value"].sum()
+
+    # Safe reads from new tables (ensure_tables guarantees they exist)
+    pending_appr = len(D["approvals"][D["approvals"]["status"]=="Pending"])
+    active_vendors= len(D["vendors"][D["vendors"]["status"]=="Active"])
+    overdue_pay   = len(D["vendor_payments"][D["vendor_payments"]["payment_status"]=="Overdue"])
+
     st.markdown('<div style="padding:0 24px;">',unsafe_allow_html=True)
 
-    # KPI cards
-    kpis=[("📦 TOTAL",len(fil),"#4f46e5"),("⏳ PENDING",len(fil[fil["current_status"]=="Pending"]),"#f59e0b"),
-          ("🚚 TRANSIT",len(fil[fil["current_status"].isin(["Procured","Dispatched"])]),"#8b5cf6"),
-          ("✅ DONE",len(fil[fil["current_status"].isin(["Delivered","Invoiced","Paid"])]),"#10b981"),
-          ("💰 PAID",len(fil[fil["current_status"]=="Paid"]),"#06b6d4"),
-          ("₹ VALUE",f"₹{tv/100000:.1f}L","#ef4444")]
-    for col,(lbl,val,color) in zip(st.columns(6,gap="small"),kpis):
+    # ── ROW 1: 6 KPI CARDS ────────────────────────────────────────────────────
+    kpis=[
+        ("💰","TOTAL SPEND",   f"₹{tv/100000:.1f}L",    "All time",      "#4f46e5"),
+        ("✅","AMOUNT PAID",   f"₹{paid_tv/100000:.1f}L","Completed",    "#22c55e"),
+        ("📦","ACTIVE ORDERS", str(len(df[df["current_status"].isin(["Pending","Procured","Dispatched","Delivered","Invoiced"])])), "In progress","#3b82f6"),
+        ("🏢","ACTIVE VENDORS",str(active_vendors),       "Registered",   "#8b5cf6"),
+        ("⏳","PENDING APPROVALS",str(pending_appr),      "Awaiting action","#f59e0b"),
+        ("🔴","OVERDUE PAYMENTS",str(overdue_pay),        "Needs attention","#ef4444"),
+    ]
+    for col,(ico,lbl,val,sub,color) in zip(st.columns(6,gap="small"),kpis):
         with col:
-            st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 14px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04);border-top:3px solid {color};"><div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#64748b;margin-bottom:8px;">{lbl}</div><div style="font-size:28px;font-weight:800;color:{color};line-height:1;">{val}</div></div>',unsafe_allow_html=True)
-    sp(20)
+            st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 12px 12px;box-shadow:0 1px 3px rgba(0,0,0,.04);border-top:3px solid {color};"><div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;"><span style="font-size:13px;">{ico}</span><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#64748b;">{lbl}</div></div><div style="font-size:24px;font-weight:900;color:{color};line-height:1;">{val}</div><div style="font-size:10px;color:#94a3b8;margin-top:3px;">{sub}</div></div>',unsafe_allow_html=True)
+    sp(18)
 
-    # Filter tabs
+    # ── ROW 2: MONTHLY CHART + ATTENTION REQUIRED ─────────────────────────────
+    chart_col, attn_col = st.columns([2.2, 1], gap="medium")
+    with chart_col:
+        if HAS_PLOTLY:
+            months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+            po_spend=[4.2,9.8,6.1,2.3,4.8,8.7,6.3,5.2,7.8,6.1,7.4,6.9]
+            non_po  =[1.8,2.4,1.9,0.9,2.1,2.3,1.8,2.0,2.4,1.9,2.1,2.2]
+            fig=go.Figure()
+            fig.add_trace(go.Bar(name="PO Spend",x=months,y=po_spend,
+                marker_color="#4f46e5",text=[f"₹{v}L" for v in po_spend],
+                textposition="outside",textfont=_BLK,marker_line_width=0))
+            fig.add_trace(go.Bar(name="Non-PO Spend",x=months,y=non_po,
+                marker_color="#cbd5e1",textfont=_BLK,marker_line_width=0))
+            fig.update_layout(
+                title=dict(text="Monthly Spend Summary (₹ Lakhs)",font=dict(size=13,color="#111827",family="DM Sans"),x=0),
+                paper_bgcolor="white",plot_bgcolor="white",font=_BLK,barmode="stack",
+                margin=dict(t=46,b=40,l=50,r=16),height=260,showlegend=True,
+                legend=dict(font=_BLK,orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
+                xaxis=dict(showgrid=False,tickfont=_BLK,linecolor="#e2e8f0"),
+                yaxis=dict(showgrid=True,gridcolor="#f0f4f8",tickfont=_BLK,ticksuffix="L"),
+            )
+            fig.update_xaxes(tickfont=_BLK); fig.update_yaxes(tickfont=_BLK)
+            st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);">',unsafe_allow_html=True)
+            st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
+            st.markdown('</div>',unsafe_allow_html=True)
+
+    with attn_col:
+        attn_items=[
+            ("Orders to approve",   pending_appr,         "#fef3c7","#92400e"),
+            ("Overdue payments",    overdue_pay,           "#fee2e2","#991b1b"),
+            ("Pending orders",      len(df[df["current_status"]=="Pending"]),"#fef3c7","#92400e"),
+            ("In transit",          len(df[df["current_status"].isin(["Procured","Dispatched"])]),"#dbeafe","#1e40af"),
+            ("Vendors to verify",   len(D["vendors"][D["vendors"]["status"]=="Pending Verification"]),"#ede9fe","#5b21b6"),
+            ("Low stock items",     len(D["items"][D["items"]["status"]=="Low Stock"]),"#fef9c3","#92400e"),
+        ]
+        rows="".join([f'<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f8fafc;"><span style="font-size:12.5px;color:#374151;">{lbl}</span><span style="font-size:12px;font-weight:800;background:{bg};color:{fg};padding:2px 10px;border-radius:20px;">{cnt}</span></div>' for lbl,cnt,bg,fg in attn_items])
+        st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);height:260px;overflow:auto;"><div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px;border-bottom:2px solid #e2e8f0;padding-bottom:8px;">🚨 Attention Required</div>{rows}</div>',unsafe_allow_html=True)
+    sp(18)
+
+    # ── ROW 3: 4 BOTTOM KPI TILES ─────────────────────────────────────────────
+    kpi2=[
+        ("🗒️","Orders Issued",    str(len(df)),                     "This year"),
+        ("🔄","Bills Processed",  str(len(D["invoices"])),           "Invoices"),
+        ("📦","Item Catalogue",   str(len(D["items"])),              "Registered items"),
+        ("🏢","Total Vendors",    str(len(D["vendors"])),            "Registered"),
+    ]
+    for col,(ico,lbl,val,sub) in zip(st.columns(4,gap="medium"),kpi2):
+        with col:
+            st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;gap:14px;"><div style="width:42px;height:42px;border-radius:10px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">{ico}</div><div><div style="font-size:22px;font-weight:900;color:#0f172a;">{val}</div><div style="font-size:12px;font-weight:600;color:#374151;">{lbl}</div><div style="font-size:10.5px;color:#94a3b8;">{sub}</div></div></div>',unsafe_allow_html=True)
+    sp(18)
+
+    # ── ROW 4: COMPANY FILTER + ORDERS TABLE ──────────────────────────────────
+    cf=st.session_state.co_filter
     fc1,fc2,fc3,fc4,_=st.columns([1.4,1.2,1.5,0.9,4],gap="small")
     for col,lbl,key in [(fc1,"🏢 All Companies","All"),(fc2,"Robokart","Robokart"),
                          (fc3,"Bharat Tech","Bharat Tech"),(fc4,"EL","EL")]:
@@ -751,63 +830,20 @@ def page_dashboard():
             if st.button(lbl+(" ✓" if cf==key else ""),key=f"cf_{key}",
                          type="primary" if cf==key else "secondary",use_container_width=True):
                 st.session_state.co_filter=key; st.rerun()
-    sp(20)
-
-    # Charts — all text explicitly #111827
-    if HAS_PLOTLY and len(fil)>0:
-        ch1,ch2=st.columns([3,2],gap="medium")
-        with ch1:
-            cdf=df.groupby("company")["total_value"].apply(lambda x:x.astype(float).sum()).reset_index()
-            cdf.columns=["Company","Value"]
-            fig=go.Figure(go.Bar(
-                x=cdf["Company"],y=cdf["Value"],
-                marker_color=[CC.get(c,"#94a3b8") for c in cdf["Company"]],
-                text=[f"₹{v/1e5:.1f}L" for v in cdf["Value"]],
-                textposition="outside",
-                textfont=dict(color="#111827",size=12,family="DM Sans"),
-                marker_line_width=0,
-            ))
-            fig.update_layout(**chart_layout("Order Value by Company",
-                yaxis=dict(showgrid=True,gridcolor="#f0f4f8",tickprefix="₹",tickformat=".2s",
-                           tickfont=_BLK,linecolor="#cbd5e1",title_font=_BLK)))
-            fig.update_traces(textfont_color="#111827")
-            fig.update_xaxes(tickfont=_BLK, title_font=_BLK)
-            fig.update_yaxes(tickfont=_BLK, title_font=_BLK)
-            st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.04);">',unsafe_allow_html=True)
-            st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
-            st.markdown('</div>',unsafe_allow_html=True)
-        with ch2:
-            sc=fil["current_status"].value_counts().reset_index(); sc.columns=["Status","Count"]
-            fig2=go.Figure(go.Pie(
-                labels=sc["Status"],values=sc["Count"],hole=0.52,
-                marker=dict(colors=[SC.get(s,"#94a3b8") for s in sc["Status"]]),
-                textinfo="label+value",
-                textfont=_BLK,
-            ))
-            fig2.update_layout(
-                title=dict(text="Orders by Status",font=dict(size=13,color="#111827",family="DM Sans"),x=0),
-                paper_bgcolor="white",font=_BLK,
-                margin=dict(t=46,b=10,l=10,r=10),height=265,
-                showlegend=True,legend=dict(font=_BLK),
-            )
-            st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.04);">',unsafe_allow_html=True)
-            st.plotly_chart(fig2,use_container_width=True,config={"displayModeBar":False})
-            st.markdown('</div>',unsafe_allow_html=True)
-        sp(20)
-
-    # Table
+    sp(14)
+    fil=df if cf=="All" else df[df["company"]==cf]
     TH="padding:10px 14px;background:#f8fafc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;"
-    TD="padding:12px 14px;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle;"
+    TD="padding:11px 14px;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle;font-size:12.5px;"
     tbody=""
     if len(fil)==0:
-        tbody='<tr><td colspan="9" style="padding:32px;text-align:center;color:#94a3b8;">No orders found.</td></tr>'
+        tbody='<tr><td colspan="7" style="padding:32px;text-align:center;color:#94a3b8;">No orders found.</td></tr>'
     else:
         for i,(_,r) in enumerate(fil.iterrows()):
             bg="#fff" if i%2==0 else "#fafbfc"
-            desc=str(r["item_description"]); desc=desc[:36]+"…" if len(desc)>36 else desc
-            tbody+=f'<tr style="background:{bg}"><td style="{TD}font-weight:700;color:#4f46e5;font-size:11.5px;white-space:nowrap;">{r["order_id"]}</td><td style="{TD}">{cobadge(r["company"])}</td><td style="{TD}color:#64748b;font-size:11px;">{r["po_number"]}</td><td style="{TD}font-size:12px;">{r["govt_department"]}</td><td style="{TD}font-size:12px;">{desc}</td><td style="{TD}font-weight:700;white-space:nowrap;">₹{float(r["total_value"]):,.0f}</td><td style="{TD}">{pbadge(r["priority"])}</td><td style="{TD}">{sbadge(r["current_status"])}</td><td style="{TD}color:#94a3b8;font-size:11px;white-space:nowrap;">{r["last_updated"]}</td></tr>'
+            desc=str(r["item_description"]); desc=desc[:34]+"…" if len(desc)>34 else desc
+            tbody+=f'<tr style="background:{bg}"><td style="{TD}font-weight:700;color:#4f46e5;font-size:11px;white-space:nowrap;">{r["order_id"]}</td><td style="{TD}">{cobadge(r["company"])}</td><td style="{TD}font-size:11px;color:#64748b;">{r["govt_department"][:24]}</td><td style="{TD}">{desc}</td><td style="{TD}font-weight:700;white-space:nowrap;">₹{float(r["total_value"]):,.0f}</td><td style="{TD}">{pbadge(r["priority"])}</td><td style="{TD}">{sbadge(r["current_status"])}</td></tr>'
     label="All Orders" if cf=="All" else f"{cf} Orders"
-    st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);"><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #f1f5f9;"><div style="font-size:14px;font-weight:700;color:#0f172a;">📦 {label}</div><div style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:3px 12px;border-radius:20px;">{len(fil)} orders</div></div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="{TH}">Order ID</th><th style="{TH}">Company</th><th style="{TH}">PO#</th><th style="{TH}">Department</th><th style="{TH}">Description</th><th style="{TH}">Value</th><th style="{TH}">Priority</th><th style="{TH}">Status</th><th style="{TH}">Updated</th></tr></thead><tbody>{tbody}</tbody></table></div></div>',unsafe_allow_html=True)
+    st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);"><div style="display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid #f1f5f9;"><div style="font-size:14px;font-weight:700;color:#0f172a;">📋 Recent Purchase Orders — {label}</div><div style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:3px 12px;border-radius:20px;">{len(fil)} orders</div></div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="{TH}">Order ID</th><th style="{TH}">Company</th><th style="{TH}">Department</th><th style="{TH}">Description</th><th style="{TH}">Value</th><th style="{TH}">Priority</th><th style="{TH}">Status</th></tr></thead><tbody>{tbody}</tbody></table></div></div>',unsafe_allow_html=True)
     st.markdown('</div>',unsafe_allow_html=True); sp(8); footer()
 
 
@@ -1281,6 +1317,7 @@ def page_manage_records():
 
 # ─── VENDORS ──────────────────────────────────────────────────────────────────
 def page_vendors():
+    ensure_tables()
     topbar("🏢 Vendors","Manage vendor registrations, payments and status")
     D=st.session_state.D
     st.markdown('<div style="padding:0 24px;">',unsafe_allow_html=True)
@@ -1383,6 +1420,7 @@ def page_vendors():
 
 # ─── ITEMS ────────────────────────────────────────────────────────────────────
 def page_items():
+    ensure_tables()
     topbar("📦 Items","Item catalogue — stock, pricing and vendor links")
     D=st.session_state.D
     st.markdown('<div style="padding:0 24px;">',unsafe_allow_html=True)
@@ -1431,6 +1469,7 @@ def page_items():
 
 # ─── APPROVALS ────────────────────────────────────────────────────────────────
 def page_approvals():
+    ensure_tables()
     topbar("✅ Approvals","Review and action pending purchase order approvals")
     D=st.session_state.D
     st.markdown('<div style="padding:0 24px;">',unsafe_allow_html=True)
