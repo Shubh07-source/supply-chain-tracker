@@ -1324,6 +1324,10 @@ def page_vendors():
     t1,t2,t3=st.tabs(["📋 All Vendors","➕ Register Vendor","💰 Payment Requests"])
 
     with t1:
+        # Session state for vendor edit/delete
+        if "vnd_edit_id" not in st.session_state: st.session_state.vnd_edit_id=None
+        if "vnd_del_id"  not in st.session_state: st.session_state.vnd_del_id=None
+
         vdf=D["vendors"].copy()
         fc1,fc2,_=st.columns([1.4,1.4,5],gap="small")
         with fc1: fstat=st.selectbox("Filter by Status",["All"]+V_STATUSES,key="vf_stat")
@@ -1331,17 +1335,113 @@ def page_vendors():
         if fstat!="All": vdf=vdf[vdf["status"]==fstat]
         if fcat!="All":  vdf=vdf[vdf["category"]==fcat]
         sp(8)
+
+        # ── DELETE CONFIRM ─────────────────────────────────────────────────────
+        if st.session_state.vnd_del_id:
+            del_vid=st.session_state.vnd_del_id
+            del_vrow=D["vendors"][D["vendors"]["vendor_id"]==del_vid]
+            del_name=del_vrow["name"].values[0] if len(del_vrow)>0 else del_vid
+            st.markdown(f'<div style="background:#fff5f5;border:1.5px solid #fca5a5;border-radius:10px;padding:14px 18px;margin-bottom:14px;"><div style="font-size:14px;font-weight:800;color:#dc2626;margin-bottom:5px;">⚠️ Confirm Delete — {del_vid}</div><div style="font-size:13px;color:#1e293b;">Permanently delete vendor <strong>{del_name}</strong>? All payment records linked to this vendor will remain. Cannot be undone.</div></div>',unsafe_allow_html=True)
+            ca,cb,_=st.columns([1,1,5])
+            with ca:
+                if st.button("🗑️ Yes, Delete",type="primary",key="vnd_del_confirm",use_container_width=True):
+                    D["vendors"]=D["vendors"][D["vendors"]["vendor_id"]!=del_vid].reset_index(drop=True)
+                    save("vendors"); st.session_state.vnd_del_id=None
+                    st.success(f"✅ Vendor {del_vid} deleted."); st.rerun()
+            with cb:
+                if st.button("Cancel",key="vnd_del_cancel",use_container_width=True):
+                    st.session_state.vnd_del_id=None; st.rerun()
+
+        # ── EDIT FORM ──────────────────────────────────────────────────────────
+        if st.session_state.vnd_edit_id:
+            ev=st.session_state.vnd_edit_id
+            evrow=D["vendors"][D["vendors"]["vendor_id"]==ev]
+            if len(evrow)==0: st.session_state.vnd_edit_id=None; st.rerun()
+            evrow=evrow.iloc[0]
+            st.markdown(f'<div style="background:#eff6ff;border:1.5px solid #bae6fd;border-radius:10px;padding:12px 18px 6px;margin-bottom:12px;"><div style="font-size:13px;font-weight:800;color:#0369a1;">✏️ Editing Vendor — {ev} · {evrow["name"]}</div></div>',unsafe_allow_html=True)
+            with st.form("vnd_edit_form"):
+                section_label("Basic Information")
+                ec1,ec2=st.columns(2)
+                with ec1:
+                    e_name=st.text_input("Vendor Name *",value=evrow["name"],key="ve_name")
+                    e_cat_idx=V_CATS.index(evrow["category"]) if evrow["category"] in V_CATS else 0
+                    e_cat=st.selectbox("Category *",V_CATS,index=e_cat_idx,key="ve_cat")
+                    e_st_idx=V_STATUSES.index(evrow["status"]) if evrow["status"] in V_STATUSES else 0
+                    e_status=st.selectbox("Status",V_STATUSES,index=e_st_idx,key="ve_stat")
+                with ec2:
+                    e_contact=st.text_input("Contact Person *",value=evrow["contact_person"],key="ve_cp")
+                    e_email=st.text_input("Email",value=evrow["email"],key="ve_em")
+                    e_phone=st.text_input("Phone",value=evrow["phone"],key="ve_ph")
+                section_label("Financial Details")
+                ec3,ec4=st.columns(2)
+                with ec3:
+                    e_gst=st.text_input("GST Number",value=evrow["gst_number"],key="ve_gst")
+                    e_bank=st.text_input("Bank Name",value=evrow["bank_name"],key="ve_bank")
+                with ec4:
+                    e_acc=st.text_input("Account Number",value=evrow["account_number"],key="ve_acc")
+                    e_ifsc=st.text_input("IFSC Code",value=evrow["ifsc"],key="ve_ifsc")
+                e_addr=st.text_input("Address",value=evrow["address"],key="ve_addr")
+                e_notes=st.text_area("Notes",value=evrow["notes"],height=55,key="ve_notes")
+                sp(6); s1,s2,_=st.columns([1,1,4])
+                with s1: esave=st.form_submit_button("💾 Save Changes",type="primary",use_container_width=True)
+                with s2: ecancel=st.form_submit_button("✕ Cancel",use_container_width=True)
+            if ecancel: st.session_state.vnd_edit_id=None; st.rerun()
+            if esave:
+                if not e_name or not e_contact: st.error("Vendor Name and Contact Person are required.")
+                else:
+                    idx=D["vendors"][D["vendors"]["vendor_id"]==ev].index[0]
+                    for col,val in [("name",e_name),("category",e_cat),("status",e_status),("contact_person",e_contact),
+                                    ("email",e_email),("phone",e_phone),("gst_number",e_gst),("bank_name",e_bank),
+                                    ("account_number",e_acc),("ifsc",e_ifsc),("address",e_addr),("notes",e_notes)]:
+                        D["vendors"].at[idx,col]=val
+                    save("vendors"); st.session_state.vnd_edit_id=None
+                    st.success(f"✅ Vendor {ev} updated."); st.rerun()
+
+        # ── VENDOR ROWS WITH EDIT/DELETE ──────────────────────────────────────
         TH="padding:10px 14px;background:#f8fafc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;"
         TD="padding:11px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px;color:#1e293b;"
-        tbody=""
-        for i,(_,r) in enumerate(vdf.iterrows()):
-            bg="#fff" if i%2==0 else "#fafbfc"
-            tbody+=f'<tr style="background:{bg}"><td style="{TD}font-weight:700;color:#4f46e5;font-size:11px;">{r["vendor_id"]}</td><td style="{TD}font-weight:600;">{r["name"]}</td><td style="{TD}color:#64748b;">{r["contact_person"]}</td><td style="{TD}color:#64748b;font-size:11px;">{r["email"]}</td><td style="{TD}color:#64748b;">{r["phone"]}</td><td style="{TD}">{r["category"]}</td><td style="{TD}">{vsbadge(r["status"])}</td><td style="{TD}color:#94a3b8;font-size:11px;">{r["registration_date"]}</td></tr>'
-        st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);"><div style="padding:12px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14px;font-weight:700;color:#0f172a;">🏢 Vendor Directory</div><div style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:3px 12px;border-radius:20px;">{len(vdf)} vendors</div></div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="{TH}">ID</th><th style="{TH}">Vendor Name</th><th style="{TH}">Contact</th><th style="{TH}">Email</th><th style="{TH}">Phone</th><th style="{TH}">Category</th><th style="{TH}">Status</th><th style="{TH}">Registered</th></tr></thead><tbody>{tbody}</tbody></table></div></div>',unsafe_allow_html=True)
+        st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);"><div style="padding:12px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14px;font-weight:700;color:#0f172a;">🏢 Vendor Directory</div><div style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:3px 12px;border-radius:20px;">{len(vdf)} vendors</div></div></div>',unsafe_allow_html=True)
+        sp(4)
+        for _,r in vdf.iterrows():
+            vid=r["vendor_id"]; is_editing=(st.session_state.vnd_edit_id==vid)
+            border="border-left:3px solid #3b82f6;" if is_editing else "border-left:3px solid transparent;"
+            row_col,btn_col=st.columns([9,1.2])
+            with row_col:
+                vpays_r=D["vendor_payments"][D["vendor_payments"]["vendor_id"]==vid]
+                t_biz=vpays_r["total_amount"].astype(float).sum() if len(vpays_r) else 0
+                t_paid=vpays_r["paid_amount"].astype(float).sum() if len(vpays_r) else 0
+                t_out=vpays_r["outstanding"].astype(float).sum() if len(vpays_r) else 0
+                pay_pct=int(t_paid/t_biz*100) if t_biz>0 else 0
+                pay_bar=f'<div style="background:#e2e8f0;border-radius:3px;height:5px;width:60px;display:inline-block;vertical-align:middle;"><div style="background:#22c55e;border-radius:3px;height:5px;width:{pay_pct}%;"></div></div>'
+                st.markdown(f"""<div style="background:{"#eff6ff" if is_editing else "#fff"};border:1px solid #e2e8f0;{border}border-radius:10px;padding:11px 16px;display:grid;grid-template-columns:0.7fr 1.4fr 1fr 1.2fr 0.8fr 0.8fr 1.2fr 1fr;gap:8px;align-items:center;">
+                  <div style="font-size:11px;font-weight:700;color:#4f46e5;">{vid}</div>
+                  <div><div style="font-size:12.5px;font-weight:600;color:#0f172a;">{r["name"][:22]}</div><div style="font-size:10.5px;color:#94a3b8;">{r["category"]}</div></div>
+                  <div><div style="font-size:11.5px;color:#374151;">{r["contact_person"]}</div><div style="font-size:10.5px;color:#94a3b8;">{r["phone"]}</div></div>
+                  <div style="font-size:11px;color:#64748b;">{r["email"][:20]}</div>
+                  <div>{vsbadge(r["status"])}</div>
+                  <div style="font-size:11px;color:#94a3b8;">{r["registration_date"]}</div>
+                  <div><div style="font-size:10px;color:#64748b;">₹{t_biz:,.0f} total</div><div style="display:flex;align-items:center;gap:4px;margin-top:3px;">{pay_bar}<span style="font-size:9.5px;color:#64748b;">{pay_pct}%</span></div></div>
+                  <div><div style="font-size:11px;color:#22c55e;font-weight:700;">₹{t_paid:,.0f} paid</div><div style="font-size:11px;color:#ef4444;font-weight:700;">₹{t_out:,.0f} due</div></div>
+                </div>""", unsafe_allow_html=True)
+            with btn_col:
+                sp(4); b1,b2=st.columns(2)
+                with b1:
+                    if st.button("✏️",key=f"vnd_edit_{vid}",help=f"Edit {vid}",
+                                 type="primary" if is_editing else "secondary",use_container_width=True):
+                        st.session_state.vnd_edit_id=None if is_editing else vid
+                        st.session_state.vnd_del_id=None; st.rerun()
+                with b2:
+                    if st.button("🗑️",key=f"vnd_del_{vid}",help=f"Delete {vid}",use_container_width=True):
+                        st.session_state.vnd_del_id=vid
+                        st.session_state.vnd_edit_id=None; st.rerun()
+            sp(3)
+        st.markdown('<p style="font-size:11.5px;color:#94a3b8;margin-top:8px;">💡 Click ✏️ to edit · 🗑️ to delete a vendor</p>',unsafe_allow_html=True)
         sp(16)
-        v_opts=["— Select vendor to view details —"]+[f"{r['vendor_id']} — {r['name']}" for _,r in D["vendors"].iterrows()]
+
+        # ── VENDOR DETAIL + PAYMENT SUMMARY ───────────────────────────────────
+        v_opts=["— Select vendor to view full details —"]+[f"{r['vendor_id']} — {r['name']}" for _,r in D["vendors"].iterrows()]
         vsel=st.selectbox("View Vendor Details & Payment Summary",v_opts,key="v_detail_sel")
-        if vsel!="— Select vendor to view details —":
+        if vsel!="— Select vendor to view full details —":
             vid=vsel.split(" — ")[0]; vrow=D["vendors"][D["vendors"]["vendor_id"]==vid].iloc[0]
             vpays=D["vendor_payments"][D["vendor_payments"]["vendor_id"]==vid]
             total_biz=vpays["total_amount"].astype(float).sum() if len(vpays) else 0
@@ -1431,7 +1531,7 @@ def page_vendors():
         st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:16px;">',unsafe_allow_html=True)
         section_label("✏️ Update Existing Payment Status")
         pay_opts=["— Select payment to update —"]+[
-            f"{r['payment_id']} — {D['vendors'][D['vendors']['vendor_id']==r['vendor_id']]['name'].values[0] if len(D['vendors'][D['vendors']['vendor_id']==r['vendor_id']])>0 else r['vendor_id']} — {psbadge(r['payment_status'])} — ₹{float(r['outstanding']):,.0f} due"
+            f"{r['payment_id']} — {D['vendors'][D['vendors']['vendor_id']==r['vendor_id']]['name'].values[0][:18] if len(D['vendors'][D['vendors']['vendor_id']==r['vendor_id']])>0 else r['vendor_id']} — [{r['payment_status']}] — ₹{float(r['outstanding']):,.0f} due"
             for _,r in D["vendor_payments"].iterrows()
         ]
         upd_sel=st.selectbox("Select Payment Record",pay_opts,key="upd_pay_sel")
