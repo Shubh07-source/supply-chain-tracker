@@ -774,22 +774,52 @@ def page_dashboard():
     chart_col, attn_col = st.columns([2.2, 1], gap="medium")
     with chart_col:
         if HAS_PLOTLY:
-            months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-            po_spend=[4.2,9.8,6.1,2.3,4.8,8.7,6.3,5.2,7.8,6.1,7.4,6.9]
-            non_po  =[1.8,2.4,1.9,0.9,2.1,2.3,1.8,2.0,2.4,1.9,2.1,2.2]
+            # ── DYNAMIC: derive monthly spend from real orders ─────────────────
+            chart_df = df.copy()
+            # Apply company filter to chart too
+            if st.session_state.co_filter != "All":
+                chart_df = chart_df[chart_df["company"]==st.session_state.co_filter]
+            # Parse date_created → month number
+            chart_df["_month"] = pd.to_datetime(
+                chart_df["date_created"], errors="coerce"
+            ).dt.month
+            chart_df["_year"] = pd.to_datetime(
+                chart_df["date_created"], errors="coerce"
+            ).dt.year
+            # Use current year if data exists, else show all
+            cur_year = datetime.now().year
+            year_df = chart_df[chart_df["_year"]==cur_year] if len(chart_df[chart_df["_year"]==cur_year])>0 else chart_df
+            # PO Spend = orders with a PO number, Non-PO = without
+            po_df  = year_df[year_df["po_number"].str.strip()!=""]
+            npo_df = year_df[year_df["po_number"].str.strip()==""]
+            months_lbl=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+            po_vals  =[round(po_df[po_df["_month"]==m]["total_value"].sum()/100000,2)  for m in range(1,13)]
+            npo_vals =[round(npo_df[npo_df["_month"]==m]["total_value"].sum()/100000,2) for m in range(1,13)]
+            total_vals=[round((po_vals[i]+npo_vals[i]),2) for i in range(12)]
+            # Only label bars that have data
+            po_text =[f"₹{v}L" if v>0 else "" for v in po_vals]
+            chart_title = f"Monthly Spend Summary (₹ Lakhs) — {cur_year}"
+            if st.session_state.co_filter!="All":
+                chart_title += f" · {st.session_state.co_filter}"
             fig=go.Figure()
-            fig.add_trace(go.Bar(name="PO Spend",x=months,y=po_spend,
-                marker_color="#4f46e5",text=[f"₹{v}L" for v in po_spend],
-                textposition="outside",textfont=_BLK,marker_line_width=0))
-            fig.add_trace(go.Bar(name="Non-PO Spend",x=months,y=non_po,
-                marker_color="#cbd5e1",textfont=_BLK,marker_line_width=0))
+            fig.add_trace(go.Bar(
+                name="PO Spend",x=months_lbl,y=po_vals,
+                marker_color="#4f46e5",text=po_text,
+                textposition="outside",textfont=_BLK,marker_line_width=0,
+                hovertemplate="<b>%{x}</b><br>PO Spend: ₹%{y}L<extra></extra>"))
+            fig.add_trace(go.Bar(
+                name="Non-PO Spend",x=months_lbl,y=npo_vals,
+                marker_color="#cbd5e1",textfont=_BLK,marker_line_width=0,
+                hovertemplate="<b>%{x}</b><br>Non-PO: ₹%{y}L<extra></extra>"))
             fig.update_layout(
-                title=dict(text="Monthly Spend Summary (₹ Lakhs)",font=dict(size=13,color="#111827",family="DM Sans"),x=0),
+                title=dict(text=chart_title,font=dict(size=13,color="#111827",family="DM Sans"),x=0),
                 paper_bgcolor="white",plot_bgcolor="white",font=_BLK,barmode="stack",
                 margin=dict(t=46,b=40,l=50,r=16),height=260,showlegend=True,
                 legend=dict(font=_BLK,orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
-                xaxis=dict(showgrid=False,tickfont=_BLK,linecolor="#e2e8f0"),
-                yaxis=dict(showgrid=True,gridcolor="#f0f4f8",tickfont=_BLK,ticksuffix="L"),
+                xaxis=dict(showgrid=False,tickfont=_BLK,linecolor="#e2e8f0",
+                           ticks="outside",tickcolor="#e2e8f0"),
+                yaxis=dict(showgrid=True,gridcolor="#f0f4f8",tickfont=_BLK,ticksuffix="L",
+                           rangemode="tozero"),
             )
             fig.update_xaxes(tickfont=_BLK); fig.update_yaxes(tickfont=_BLK)
             st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);">',unsafe_allow_html=True)
