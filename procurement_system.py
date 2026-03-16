@@ -1378,6 +1378,39 @@ def page_vendors():
 
     with t3:
         vpdf=D["vendor_payments"].copy()
+        # ── PAYMENT SUMMARY STRIP ──────────────────────────────────────────────
+        total_biz_all   = vpdf["total_amount"].astype(float).sum()
+        total_paid_all  = vpdf["paid_amount"].astype(float).sum()
+        total_out_all   = vpdf["outstanding"].astype(float).sum()
+        completed_cnt   = len(vpdf[vpdf["payment_status"]=="Completed"])
+        partial_cnt     = len(vpdf[vpdf["payment_status"]=="Partially Paid"])
+        overdue_cnt     = len(vpdf[vpdf["payment_status"]=="Overdue"])
+        pending_cnt     = len(vpdf[vpdf["payment_status"]=="Pending"])
+        st.markdown(f"""
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #4f46e5;border-radius:10px;padding:12px 14px;">
+            <div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:4px;">Total Business</div>
+            <div style="font-size:20px;font-weight:800;color:#4f46e5;">₹{total_biz_all:,.0f}</div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #22c55e;border-radius:10px;padding:12px 14px;">
+            <div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:4px;">Total Paid</div>
+            <div style="font-size:20px;font-weight:800;color:#22c55e;">₹{total_paid_all:,.0f}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px;">{completed_cnt} fully paid · {partial_cnt} partial</div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #ef4444;border-radius:10px;padding:12px 14px;">
+            <div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:4px;">Total Outstanding</div>
+            <div style="font-size:20px;font-weight:800;color:#ef4444;">₹{total_out_all:,.0f}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px;">{overdue_cnt} overdue · {pending_cnt} pending</div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #f59e0b;border-radius:10px;padding:12px 14px;">
+            <div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:4px;">Collection Rate</div>
+            <div style="font-size:20px;font-weight:800;color:#f59e0b;">{int(total_paid_all/total_biz_all*100) if total_biz_all>0 else 0}%</div>
+            <div style="background:#e2e8f0;border-radius:4px;height:6px;margin-top:6px;"><div style="background:#22c55e;border-radius:4px;height:6px;width:{int(total_paid_all/total_biz_all*100) if total_biz_all>0 else 0}%;"></div></div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── PAYMENTS TABLE ─────────────────────────────────────────────────────
         TH="padding:10px 14px;background:#f8fafc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#475569;border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;"
         TD="padding:11px 14px;border-bottom:1px solid #f1f5f9;font-size:12.5px;color:#1e293b;"
         tbody=""
@@ -1385,15 +1418,109 @@ def page_vendors():
             bg="#fff" if i%2==0 else "#fafbfc"
             total=float(r["total_amount"]); paid=float(r["paid_amount"]); out=float(r["outstanding"])
             pct=int(paid/total*100) if total>0 else 0
-            prog=f'<div style="background:#e2e8f0;border-radius:4px;height:6px;width:80px;display:inline-block;vertical-align:middle;"><div style="background:#22c55e;border-radius:4px;height:6px;width:{pct}%;"></div></div> <span style="font-size:10px;color:#64748b;">{pct}%</span>'
+            bar_color="#22c55e" if pct==100 else "#f59e0b" if pct>0 else "#e2e8f0"
+            prog=f'<div style="background:#e2e8f0;border-radius:4px;height:7px;width:80px;display:inline-block;vertical-align:middle;"><div style="background:{bar_color};border-radius:4px;height:7px;width:{pct}%;"></div></div> <span style="font-size:10px;font-weight:700;color:#64748b;">{pct}%</span>'
             vname=D["vendors"][D["vendors"]["vendor_id"]==r["vendor_id"]]["name"].values
-            vname=vname[0][:20] if len(vname)>0 else r["vendor_id"]
-            tbody+=f'<tr style="background:{bg}"><td style="{TD}font-weight:700;color:#4f46e5;font-size:11px;">{r["payment_id"]}</td><td style="{TD}font-weight:600;">{vname}</td><td style="{TD}color:#64748b;font-size:11px;">{r["order_id"]}</td><td style="{TD}font-weight:700;">₹{total:,.0f}</td><td style="{TD}color:#22c55e;font-weight:700;">₹{paid:,.0f}</td><td style="{TD}color:#ef4444;font-weight:700;">₹{out:,.0f}</td><td style="{TD}">{prog}</td><td style="{TD}">{psbadge(r["payment_status"])}</td><td style="{TD}color:#94a3b8;font-size:11px;">{r["due_date"]}</td></tr>'
-        total_outstanding=vpdf["outstanding"].astype(float).sum()
-        st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);"><div style="padding:12px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14px;font-weight:700;color:#0f172a;">💰 Vendor Payment Requests</div><div style="font-size:11px;font-weight:700;color:#ef4444;background:#fee2e2;padding:3px 12px;border-radius:20px;">Outstanding: ₹{total_outstanding:,.0f}</div></div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="{TH}">Pay ID</th><th style="{TH}">Vendor</th><th style="{TH}">Order</th><th style="{TH}">Total</th><th style="{TH}">Paid</th><th style="{TH}">Outstanding</th><th style="{TH}">Progress</th><th style="{TH}">Status</th><th style="{TH}">Due Date</th></tr></thead><tbody>{tbody}</tbody></table></div></div>',unsafe_allow_html=True)
+            vname=vname[0][:18] if len(vname)>0 else r["vendor_id"]
+            lp=str(r.get("last_payment_date","")) or "—"
+            tbody+=f'<tr style="background:{bg}"><td style="{TD}font-weight:700;color:#4f46e5;font-size:11px;">{r["payment_id"]}</td><td style="{TD}font-weight:600;">{vname}</td><td style="{TD}color:#64748b;font-size:11px;">{r["order_id"]}</td><td style="{TD}color:#64748b;font-size:11px;">{r.get("invoice_no","—")}</td><td style="{TD}font-weight:700;">₹{total:,.0f}</td><td style="{TD}color:#22c55e;font-weight:700;">₹{paid:,.0f}</td><td style="{TD}color:#ef4444;font-weight:700;">₹{out:,.0f}</td><td style="{TD}">{prog}</td><td style="{TD}">{psbadge(r["payment_status"])}</td><td style="{TD}color:#94a3b8;font-size:11px;">{r["due_date"]}</td><td style="{TD}color:#64748b;font-size:11px;">{lp}</td><td style="{TD}color:#64748b;font-size:11px;">{r.get("payment_mode","—")}</td></tr>'
+        st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);"><div style="padding:12px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14px;font-weight:700;color:#0f172a;">💰 Vendor Payment Requests</div><div style="font-size:11px;font-weight:700;color:#ef4444;background:#fee2e2;padding:3px 12px;border-radius:20px;">Outstanding: ₹{total_out_all:,.0f}</div></div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="{TH}">Pay ID</th><th style="{TH}">Vendor</th><th style="{TH}">Order</th><th style="{TH}">Invoice</th><th style="{TH}">Total</th><th style="{TH}">Paid</th><th style="{TH}">Outstanding</th><th style="{TH}">Progress</th><th style="{TH}">Status</th><th style="{TH}">Due Date</th><th style="{TH}">Last Paid</th><th style="{TH}">Mode</th></tr></thead><tbody>{tbody}</tbody></table></div></div>',unsafe_allow_html=True)
+        sp(20)
+
+        # ── UPDATE PAYMENT STATUS ──────────────────────────────────────────────
+        st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:16px;">',unsafe_allow_html=True)
+        section_label("✏️ Update Existing Payment Status")
+        pay_opts=["— Select payment to update —"]+[
+            f"{r['payment_id']} — {D['vendors'][D['vendors']['vendor_id']==r['vendor_id']]['name'].values[0] if len(D['vendors'][D['vendors']['vendor_id']==r['vendor_id']])>0 else r['vendor_id']} — {psbadge(r['payment_status'])} — ₹{float(r['outstanding']):,.0f} due"
+            for _,r in D["vendor_payments"].iterrows()
+        ]
+        upd_sel=st.selectbox("Select Payment Record",pay_opts,key="upd_pay_sel")
+        if upd_sel!="— Select payment to update —":
+            pid_upd=upd_sel.split(" — ")[0]
+            pay_row=D["vendor_payments"][D["vendor_payments"]["payment_id"]==pid_upd].iloc[0]
+            total_u=float(pay_row["total_amount"]); paid_u=float(pay_row["paid_amount"]); out_u=float(pay_row["outstanding"])
+            pct_u=int(paid_u/total_u*100) if total_u>0 else 0
+            bar_c="#22c55e" if pct_u==100 else "#f59e0b" if pct_u>0 else "#e2e8f0"
+            vname_u=D["vendors"][D["vendors"]["vendor_id"]==pay_row["vendor_id"]]["name"].values
+            vname_u=vname_u[0] if len(vname_u)>0 else pay_row["vendor_id"]
+
+            # Detail card
+            st.markdown(f"""
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin:10px 0 14px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:12px;">
+                <div><div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;">Payment ID</div><div style="font-size:13px;font-weight:700;color:#4f46e5;">{pid_upd}</div></div>
+                <div><div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;">Vendor</div><div style="font-size:13px;font-weight:600;color:#0f172a;">{vname_u}</div></div>
+                <div><div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;">Invoice</div><div style="font-size:13px;color:#0f172a;">{pay_row.get("invoice_no","—")}</div></div>
+                <div><div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;">Total Amount</div><div style="font-size:16px;font-weight:800;color:#0f172a;">₹{total_u:,.0f}</div></div>
+                <div><div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;">Paid So Far</div><div style="font-size:16px;font-weight:800;color:#22c55e;">₹{paid_u:,.0f}</div></div>
+                <div><div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;">Outstanding</div><div style="font-size:16px;font-weight:800;color:#ef4444;">₹{out_u:,.0f}</div></div>
+              </div>
+              <div style="margin-bottom:6px;font-size:10px;color:#64748b;font-weight:600;">PAYMENT PROGRESS</div>
+              <div style="background:#e2e8f0;border-radius:6px;height:10px;margin-bottom:4px;">
+                <div style="background:{bar_c};border-radius:6px;height:10px;width:{pct_u}%;transition:width .3s;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;">
+                <span>{pct_u}% collected</span>
+                <span>{psbadge(pay_row["payment_status"])}</span>
+                <span>Due: {pay_row["due_date"]}</span>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            with st.form("upd_payment_form",clear_on_submit=False):
+                section_label("Record Additional Payment / Update Status")
+                c1,c2=st.columns(2)
+                with c1:
+                    new_additional=st.number_input(
+                        "Additional Amount Being Paid Now (₹)",
+                        min_value=0, max_value=int(out_u)+1, value=0, step=1000,
+                        help="Enter 0 to only update status without adding payment")
+                    new_mode=st.selectbox("Payment Mode",["NEFT","RTGS","Cheque","DD","Online","Cash"],key="upd_mode")
+                    new_pdate=st.date_input("Payment Date",key="upd_pdate")
+                with c2:
+                    # Auto-suggest status based on payment
+                    new_total_paid=paid_u  # will recalc on submit
+                    new_status=st.selectbox("Update Payment Status",PAY_ST,
+                        index=PAY_ST.index(pay_row["payment_status"]) if pay_row["payment_status"] in PAY_ST else 0,
+                        key="upd_pstatus")
+                    new_txn=st.text_input("Transaction Reference / UTR",placeholder="UTR123456789",key="upd_txn")
+                    new_notes=st.text_area("Notes / Remarks",value=str(pay_row.get("notes","")),height=80,key="upd_notes")
+                sp(6); sc3,_=st.columns([1,2])
+                with sc3: sub_upd=st.form_submit_button("💾 Update Payment",type="primary",use_container_width=True)
+
+            if sub_upd:
+                ts=now_ist()
+                idx=D["vendor_payments"][D["vendor_payments"]["payment_id"]==pid_upd].index[0]
+                new_paid=paid_u+new_additional
+                new_outstanding=max(0,total_u-new_paid)
+                # Auto-resolve status if fully paid
+                resolved_status=new_status
+                if new_paid>=total_u: resolved_status="Completed"
+                elif new_paid>0 and new_paid<total_u: resolved_status="Partially Paid" if new_status not in ["Completed","Cancelled"] else new_status
+                D["vendor_payments"].at[idx,"paid_amount"]=str(new_paid)
+                D["vendor_payments"].at[idx,"outstanding"]=str(new_outstanding)
+                D["vendor_payments"].at[idx,"payment_status"]=resolved_status
+                D["vendor_payments"].at[idx,"last_payment_date"]=str(new_pdate)
+                D["vendor_payments"].at[idx,"payment_mode"]=new_mode
+                if new_txn: D["vendor_payments"].at[idx,"transaction_reference"]=new_txn
+                if new_notes: D["vendor_payments"].at[idx,"notes"]=new_notes
+                save("vendor_payments")
+                log_action(pay_row["order_id"],"PAYMENT_UPDATED",pay_row["payment_status"],resolved_status,
+                           st.session_state.user_name,
+                           f"Payment {pid_upd} updated — ₹{new_additional:,.0f} added · Status → {resolved_status}")
+                if resolved_status=="Completed":
+                    st.success(f"✅ **{pid_upd}** marked as **Fully Paid** — ₹{new_paid:,.0f} total collected. Outstanding cleared!")
+                elif resolved_status=="Partially Paid":
+                    st.info(f"💛 **{pid_upd}** — Partial payment recorded. ₹{new_paid:,.0f} paid · ₹{new_outstanding:,.0f} still outstanding.")
+                else:
+                    st.success(f"✅ **{pid_upd}** updated to **{resolved_status}**.")
+                st.rerun()
+        st.markdown('</div>',unsafe_allow_html=True)
         sp(16)
+
+        # ── RECORD NEW PAYMENT ─────────────────────────────────────────────────
         with st.form("add_payment_form",clear_on_submit=True):
-            section_label("Record New Payment")
+            section_label("➕ Record New Payment Request")
             c1,c2=st.columns(2)
             with c1:
                 v_opts=[f"{r['vendor_id']} — {r['name']}" for _,r in D["vendors"].iterrows()]
@@ -1402,18 +1529,19 @@ def page_vendors():
                 pay_inv=st.text_input("Invoice Number",placeholder="INV-VND-XXX")
             with c2:
                 pay_total=st.number_input("Total Amount (₹)",min_value=0,step=1000)
-                pay_paid=st.number_input("Amount Being Paid (₹)",min_value=0,step=1000)
+                pay_paid=st.number_input("Initial Paid Amount (₹)",min_value=0,step=1000)
                 pay_mode=st.selectbox("Payment Mode",["NEFT","RTGS","Cheque","DD","Online","Cash"])
                 pay_due=st.date_input("Due Date")
                 pay_status=st.selectbox("Payment Status",PAY_ST)
             pay_notes=st.text_area("Notes",height=55,key="pay_n")
             sp(4); sc2,_=st.columns([1,2])
-            with sc2: sub_p=st.form_submit_button("💾 Save Payment",type="primary",use_container_width=True)
+            with sc2: sub_p=st.form_submit_button("💾 Save Payment Request",type="primary",use_container_width=True)
         if sub_p:
             ts=now_ist(); pid=f"PAY-{str(len(D['vendor_payments'])+1).zfill(3)}"
             outstanding=max(0,pay_total-pay_paid); vid_only=pay_vend.split(" — ")[0]
-            D["vendor_payments"]=pd.concat([D["vendor_payments"],pd.DataFrame([{"payment_id":pid,"vendor_id":vid_only,"order_id":pay_order,"invoice_no":pay_inv,"total_amount":str(pay_total),"paid_amount":str(pay_paid),"outstanding":str(outstanding),"payment_status":pay_status,"due_date":str(pay_due),"last_payment_date":ts[:10],"payment_mode":pay_mode,"notes":pay_notes}])],ignore_index=True); save("vendor_payments")
-            st.success(f"✅ Payment **{pid}** recorded! Outstanding: ₹{outstanding:,.0f}"); st.rerun()
+            auto_status="Completed" if pay_paid>=pay_total and pay_total>0 else "Partially Paid" if pay_paid>0 else pay_status
+            D["vendor_payments"]=pd.concat([D["vendor_payments"],pd.DataFrame([{"payment_id":pid,"vendor_id":vid_only,"order_id":pay_order,"invoice_no":pay_inv,"total_amount":str(pay_total),"paid_amount":str(pay_paid),"outstanding":str(outstanding),"payment_status":auto_status,"due_date":str(pay_due),"last_payment_date":ts[:10],"payment_mode":pay_mode,"notes":pay_notes}])],ignore_index=True); save("vendor_payments")
+            st.success(f"✅ Payment **{pid}** recorded! Status: **{auto_status}** · Outstanding: ₹{outstanding:,.0f}"); st.rerun()
 
     st.markdown('</div>',unsafe_allow_html=True); footer()
 
