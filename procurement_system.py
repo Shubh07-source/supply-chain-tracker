@@ -774,52 +774,45 @@ def page_dashboard():
     chart_col, attn_col = st.columns([2.2, 1], gap="medium")
     with chart_col:
         if HAS_PLOTLY:
-            # ── DYNAMIC: derive monthly spend from real orders ─────────────────
             chart_df = df.copy()
-            # Apply company filter to chart too
+            chart_df["_dt"] = pd.to_datetime(chart_df["date_created"], errors="coerce")
+            chart_df["_month"] = chart_df["_dt"].dt.month
+            chart_df["_year"]  = chart_df["_dt"].dt.year
+            available_years = sorted(chart_df["_year"].dropna().unique().astype(int).tolist(), reverse=True)
+            if not available_years: available_years=[datetime.now().year]
+
+            yr_col, _ = st.columns([1,4])
+            with yr_col:
+                sel_year = st.selectbox("Year", available_years, key="dash_year")
+
+            year_df = chart_df[chart_df["_year"]==sel_year]
             if st.session_state.co_filter != "All":
-                chart_df = chart_df[chart_df["company"]==st.session_state.co_filter]
-            # Parse date_created → month number
-            chart_df["_month"] = pd.to_datetime(
-                chart_df["date_created"], errors="coerce"
-            ).dt.month
-            chart_df["_year"] = pd.to_datetime(
-                chart_df["date_created"], errors="coerce"
-            ).dt.year
-            # Use current year if data exists, else show all
-            cur_year = datetime.now().year
-            year_df = chart_df[chart_df["_year"]==cur_year] if len(chart_df[chart_df["_year"]==cur_year])>0 else chart_df
-            # PO Spend = orders with a PO number, Non-PO = without
-            po_df  = year_df[year_df["po_number"].str.strip()!=""]
-            npo_df = year_df[year_df["po_number"].str.strip()==""]
+                year_df = year_df[year_df["company"]==st.session_state.co_filter]
+
             months_lbl=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-            po_vals  =[round(po_df[po_df["_month"]==m]["total_value"].sum()/100000,2)  for m in range(1,13)]
-            npo_vals =[round(npo_df[npo_df["_month"]==m]["total_value"].sum()/100000,2) for m in range(1,13)]
-            total_vals=[round((po_vals[i]+npo_vals[i]),2) for i in range(12)]
-            # Only label bars that have data
-            po_text =[f"₹{v}L" if v>0 else "" for v in po_vals]
-            chart_title = f"Monthly Spend Summary (₹ Lakhs) — {cur_year}"
-            if st.session_state.co_filter!="All":
-                chart_title += f" · {st.session_state.co_filter}"
+            companies = df["company"].unique().tolist() if st.session_state.co_filter=="All" else [st.session_state.co_filter]
+            company_colors = {"Robokart":"#8b5cf6","Bharat Tech":"#06b6d4","EL":"#f59e0b"}
             fig=go.Figure()
-            fig.add_trace(go.Bar(
-                name="PO Spend",x=months_lbl,y=po_vals,
-                marker_color="#4f46e5",text=po_text,
-                textposition="outside",textfont=_BLK,marker_line_width=0,
-                hovertemplate="<b>%{x}</b><br>PO Spend: ₹%{y}L<extra></extra>"))
-            fig.add_trace(go.Bar(
-                name="Non-PO Spend",x=months_lbl,y=npo_vals,
-                marker_color="#cbd5e1",textfont=_BLK,marker_line_width=0,
-                hovertemplate="<b>%{x}</b><br>Non-PO: ₹%{y}L<extra></extra>"))
+            for co in companies:
+                co_df=year_df[year_df["company"]==co]
+                vals=[round(co_df[co_df["_month"]==m]["total_value"].sum()/100000,2) for m in range(1,13)]
+                fig.add_trace(go.Bar(
+                    name=co, x=months_lbl, y=vals,
+                    marker_color=company_colors.get(co,"#94a3b8"),
+                    marker_line_width=0,
+                    text=[f"₹{v}L" if v>0 else "" for v in vals],
+                    textposition="outside", textfont=_BLK,
+                    hovertemplate=f"<b>%{{x}} {sel_year}</b><br>{co}: ₹%{{y}}L<extra></extra>"))
+            chart_sub = f" · {st.session_state.co_filter}" if st.session_state.co_filter!="All" else ""
             fig.update_layout(
-                title=dict(text=chart_title,font=dict(size=13,color="#111827",family="DM Sans"),x=0),
-                paper_bgcolor="white",plot_bgcolor="white",font=_BLK,barmode="stack",
+                title=dict(text=f"Order Value by Company — {sel_year}{chart_sub}",
+                           font=dict(size=13,color="#111827",family="DM Sans"),x=0),
+                paper_bgcolor="white",plot_bgcolor="white",font=_BLK,barmode="group",
                 margin=dict(t=46,b=40,l=50,r=16),height=260,showlegend=True,
                 legend=dict(font=_BLK,orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
-                xaxis=dict(showgrid=False,tickfont=_BLK,linecolor="#e2e8f0",
-                           ticks="outside",tickcolor="#e2e8f0"),
-                yaxis=dict(showgrid=True,gridcolor="#f0f4f8",tickfont=_BLK,ticksuffix="L",
-                           rangemode="tozero"),
+                xaxis=dict(showgrid=False,tickfont=_BLK,linecolor="#e2e8f0"),
+                yaxis=dict(showgrid=True,gridcolor="#f0f4f8",tickfont=_BLK,
+                           ticksuffix="L",rangemode="tozero"),
             )
             fig.update_xaxes(tickfont=_BLK); fig.update_yaxes(tickfont=_BLK)
             st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);">',unsafe_allow_html=True)
