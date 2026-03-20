@@ -9,8 +9,8 @@ def _get_supabase():
     """Returns supabase client if configured, else None (falls back to CSV)."""
     try:
         from supabase import create_client
-        url = st.secrets["supabase"]["url"]
-        key = st.secrets["supabase"]["key"]
+        url = st.secrets["supabase"]["https://wrukcwvvessvrfaycisj.supabase.co"]
+        key = st.secrets["supabase"]["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndydWtjd3Z2ZXNzdnJmYXljaXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTkzNDEsImV4cCI6MjA4OTU3NTM0MX0.yG7oUf3Jpx8zdQumXPWWO40s2ZDZjdJplE_uLVM_cgc"]
         client = create_client(url, key)
         return client
     except KeyError:
