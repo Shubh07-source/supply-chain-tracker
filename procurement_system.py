@@ -3,6 +3,23 @@ import pandas as pd
 import os
 from datetime import datetime, timezone, timedelta
 
+# ─── SUPABASE CONNECTION ───────────────────────────────────────────────────────
+# Reads credentials from .streamlit/secrets.toml (local) or Streamlit Cloud Secrets
+def _get_supabase():
+    """Returns supabase client if configured, else None (falls back to CSV)."""
+    try:
+        from supabase import create_client
+        url  = st.secrets["supabase"]["url"]
+        key  = st.secrets["supabase"]["key"]
+        return create_client(url, key)
+    except Exception:
+        return None
+
+SUPABASE_TABLES = [
+    "orders","procurement","dispatch","delivery","invoices","activity_log",
+    "vendors","vendor_payments","items","approvals"
+]
+
 # ─── PAGE CONFIG ──────────────────────────────────────────────────────────────
 # CRITICAL: "collapsed" is the only way to permanently kill the >> arrow.
 # We expand it via CSS when needed. display:none on collapsedControl alone
@@ -127,31 +144,121 @@ def make_seed():
 def now_ist():
     return datetime.now(timezone(timedelta(hours=5,minutes=30))).strftime("%Y-%m-%d %H:%M:%S")
 
+# ─── SUPABASE DATA LAYER ──────────────────────────────────────────────────────
+def _sb_load(client, table_name, seed_df):
+    """Load one table from Supabase. Seeds it if empty."""
+    try:
+        resp = client.table(table_name).select("*").execute()
+        rows = resp.data
+        if not rows:
+            # Table empty — seed with sample data
+            seed_records = seed_df.to_dict(orient="records")
+            client.table(table_name).insert(seed_records).execute()
+            return seed_df.copy()
+        return pd.DataFrame(rows).fillna("").astype(str)
+    except Exception as e:
+        st.warning(f"Supabase load error ({table_name}): {e} — using local CSV fallback")
+        return None
+
+def _sb_save(client, table_name, df):
+    """Save full table to Supabase using upsert (insert or update by PK)."""
+    try:
+        records = df.fillna("").astype(str).to_dict(orient="records")
+        # Delete all then insert — simplest reliable approach for small tables
+        client.table(table_name).delete().neq("id","__never__").execute()
+        if records:
+            client.table(table_name).insert(records).execute()
+        return True
+    except Exception as e:
+        st.warning(f"Supabase save error ({table_name}): {e}")
+        return False
+
+def _sb_save_orders(client, df):
+    """Orders use order_id as PK, not id."""
+    try:
+        records = df.fillna("").astype(str).to_dict(orient="records")
+        client.table("orders").delete().neq("order_id","__never__").execute()
+        if records:
+            client.table("orders").insert(records).execute()
+        return True
+    except Exception as e:
+        st.warning(f"Supabase save error (orders): {e}")
+        return False
+
+def _sb_save_vendors(client, df):
+    try:
+        records = df.fillna("").astype(str).to_dict(orient="records")
+        client.table("vendors").delete().neq("vendor_id","__never__").execute()
+        if records:
+            client.table("vendors").insert(records).execute()
+        return True
+    except Exception as e:
+        st.warning(f"Supabase save error (vendors): {e}")
+        return False
+
 def load_data():
-    seed = make_seed(); out = {}
-    for k,path in FILES.items():
-        if os.path.exists(path):
-            out[k] = pd.read_csv(path,dtype=str).fillna("")
-        else:
-            d=seed[k].copy(); d.to_csv(path,index=False); out[k]=d
+    """Load all tables — from Supabase if configured, else CSV fallback."""
+    client = _get_supabase()
+    seed   = make_seed()
+    out    = {}
+
+    if client:
+        # ── SUPABASE PATH ──
+        st.session_state["_db_mode"] = "supabase"
+        for tbl in SUPABASE_TABLES:
+            result = _sb_load(client, tbl, seed[tbl])
+            out[tbl] = result if result is not None else seed[tbl].copy()
+    else:
+        # ── CSV FALLBACK (local dev) ──
+        st.session_state["_db_mode"] = "csv"
+        os.makedirs(DATA_DIR, exist_ok=True)
+        for k, path in FILES.items():
+            if os.path.exists(path):
+                out[k] = pd.read_csv(path, dtype=str).fillna("")
+            else:
+                d = seed[k].copy(); d.to_csv(path, index=False); out[k] = d
     return out
 
+def save(k):
+    """Persist table k — to Supabase if connected, CSV otherwise."""
+    D      = st.session_state.D
+    client = _get_supabase()
+
+    if client and st.session_state.get("_db_mode") == "supabase":
+        # Route to correct save function based on PK column
+        if k == "orders":
+            _sb_save_orders(client, D[k])
+        elif k == "vendors":
+            _sb_save_vendors(client, D[k])
+        elif k in ["vendor_payments","items","approvals","procurement",
+                   "dispatch","delivery","invoices","activity_log"]:
+            # These all have an "id" column as PK
+            _sb_save(client, k, D[k])
+    else:
+        # CSV fallback
+        os.makedirs(DATA_DIR, exist_ok=True)
+        D[k].to_csv(FILES[k], index=False)
+
 def ensure_tables():
-    """Called at start of each new-module page — creates any missing tables on live deployments."""
-    seed = make_seed()
+    """Ensure new module tables are loaded — called at top of Vendors/Items/Approvals pages."""
     D = st.session_state.D
+    seed = make_seed()
+    client = _get_supabase()
     changed = False
     for k in ["vendors","vendor_payments","items","approvals"]:
         if k not in D:
-            if os.path.exists(FILES[k]):
-                D[k] = pd.read_csv(FILES[k],dtype=str).fillna("")
+            if client and st.session_state.get("_db_mode") == "supabase":
+                result = _sb_load(client, k, seed[k])
+                D[k] = result if result is not None else seed[k].copy()
             else:
-                d = seed[k].copy(); d.to_csv(FILES[k],index=False); D[k] = d
+                path = FILES[k]
+                if os.path.exists(path):
+                    D[k] = pd.read_csv(path, dtype=str).fillna("")
+                else:
+                    d = seed[k].copy(); d.to_csv(path, index=False); D[k] = d
             changed = True
     if changed:
         st.session_state.D = D
-
-def save(k): st.session_state.D[k].to_csv(FILES[k], index=False)
 
 def log_action(oid,action,prev,nxt,by,detail):
     D=st.session_state.D
@@ -448,6 +555,10 @@ def topbar(title, sub=""):
     with ct:
         st.markdown(f'<div style="padding:14px 0 12px;"><div style="font-size:18px;font-weight:800;color:#0f172a;">{title}</div>{sub_h}</div>',unsafe_allow_html=True)
     with cr:
+        db_mode = st.session_state.get("_db_mode","csv")
+        db_badge = ('<div style="display:flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#15803d;">🟢 Supabase Live</div>'
+                    if db_mode=="supabase" else
+                    '<div style="display:flex;align-items:center;gap:4px;background:#fef9c3;border:1px solid #fde047;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#92400e;">💾 Local CSV</div>')
         ist = datetime.now(timezone(timedelta(hours=5,minutes=30))).strftime("%d %b %Y, %I:%M %p")
         st.markdown(f'<div style="padding:14px 24px 12px;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:10px;"><div style="display:flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:#15803d;">● Auto-saved</div><div style="font-size:11px;color:#64748b;font-weight:500;">🕐 {ist} IST</div></div>',unsafe_allow_html=True)
     st.markdown('<div style="height:1px;background:#e2e8f0;margin:0 0 20px;"></div>',unsafe_allow_html=True)
