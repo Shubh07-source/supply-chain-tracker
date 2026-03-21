@@ -3,26 +3,53 @@ import pandas as pd
 import os
 from datetime import datetime, timezone, timedelta
 
-# ─── SUPABASE CONNECTION ───────────────────────────────────────────────────────
-# Reads credentials from .streamlit/secrets.toml (local) or Streamlit Cloud Secrets
-def _get_supabase():
-    """Returns supabase client if configured, else None (falls back to CSV)."""
+# ─── MONGODB ATLAS DATABASE ────────────────────────────────────────────────────
+# Uses MongoDB Atlas as persistent database. Falls back to CSV if not configured.
+# Each table = one collection in MongoDB.
+
+ALL_TABLES = ["orders","procurement","dispatch","delivery","invoices","activity_log",
+              "vendors","vendor_payments","items","approvals"]
+
+def _get_mongo():
+    """Returns (database, db_name) or None if not configured."""
     try:
-        from supabase import create_client
-        url = st.secrets["supabase"]["https://wrukcwvvessvrfaycisj.supabase.co"]
-        key = st.secrets["supabase"]["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndydWtjd3Z2ZXNzdnJmYXljaXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTkzNDEsImV4cCI6MjA4OTU3NTM0MX0.yG7oUf3Jpx8zdQumXPWWO40s2ZDZjdJplE_uLVM_cgc"]
-        client = create_client(url, key)
-        return client
-    except KeyError:
-        return None  # secrets not configured — silent fallback to CSV
-    except Exception as e:
-        st.warning(f"⚠️ Supabase connection error: {e}")
+        from pymongo import MongoClient
+        uri = st.secrets["mongodb"]["uri"]
+        db_name = st.secrets["mongodb"].get("db_name", "supply_chain")
+        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+        client.server_info()  # test connection
+        return client[db_name]
+    except Exception:
         return None
 
-SUPABASE_TABLES = [
-    "orders","procurement","dispatch","delivery","invoices","activity_log",
-    "vendors","vendor_payments","items","approvals"
-]
+def _mg_load(db, table_name, seed_df):
+    """Load collection as DataFrame. Seeds it if empty."""
+    try:
+        col = db[table_name]
+        docs = list(col.find({}, {"_id": 0}))
+        if not docs:
+            # Empty — seed with sample data
+            records = seed_df.fillna("").astype(str).to_dict(orient="records")
+            if records:
+                col.insert_many(records)
+            return seed_df.copy()
+        return pd.DataFrame(docs).fillna("").astype(str)
+    except Exception as e:
+        st.warning(f"MongoDB load error ({table_name}): {e}")
+        return None
+
+def _mg_save(db, table_name, df):
+    """Save DataFrame to MongoDB collection (replace all)."""
+    try:
+        col = db[table_name]
+        col.delete_many({})
+        records = df.fillna("").astype(str).to_dict(orient="records")
+        if records:
+            col.insert_many(records)
+        return True
+    except Exception as e:
+        st.warning(f"MongoDB save error ({table_name}): {e}")
+        return False
 
 # ─── PAGE CONFIG ──────────────────────────────────────────────────────────────
 # CRITICAL: "collapsed" is the only way to permanently kill the >> arrow.
@@ -201,19 +228,16 @@ def _sb_save_vendors(client, df):
         return False
 
 def load_data():
-    """Load all tables — from Supabase if configured, else CSV fallback."""
-    client = _get_supabase()
-    seed   = make_seed()
-    out    = {}
-
-    if client:
-        # ── SUPABASE PATH ──
-        st.session_state["_db_mode"] = "supabase"
-        for tbl in SUPABASE_TABLES:
-            result = _sb_load(client, tbl, seed[tbl])
+    """Load all tables — MongoDB if configured, else CSV fallback."""
+    db   = _get_mongo()
+    seed = make_seed()
+    out  = {}
+    if db is not None:
+        st.session_state["_db_mode"] = "mongodb"
+        for tbl in ALL_TABLES:
+            result = _mg_load(db, tbl, seed[tbl])
             out[tbl] = result if result is not None else seed[tbl].copy()
     else:
-        # ── CSV FALLBACK (local dev) ──
         st.session_state["_db_mode"] = "csv"
         os.makedirs(DATA_DIR, exist_ok=True)
         for k, path in FILES.items():
@@ -224,35 +248,25 @@ def load_data():
     return out
 
 def save(k):
-    """Persist table k — to Supabase if connected, CSV otherwise."""
-    D      = st.session_state.D
-    client = _get_supabase()
-
-    if client and st.session_state.get("_db_mode") == "supabase":
-        # Route to correct save function based on PK column
-        if k == "orders":
-            _sb_save_orders(client, D[k])
-        elif k == "vendors":
-            _sb_save_vendors(client, D[k])
-        elif k in ["vendor_payments","items","approvals","procurement",
-                   "dispatch","delivery","invoices","activity_log"]:
-            # These all have an "id" column as PK
-            _sb_save(client, k, D[k])
+    """Persist table k — MongoDB if connected, CSV otherwise."""
+    D  = st.session_state.D
+    db = _get_mongo()
+    if db is not None and st.session_state.get("_db_mode") == "mongodb":
+        _mg_save(db, k, D[k])
     else:
-        # CSV fallback
         os.makedirs(DATA_DIR, exist_ok=True)
         D[k].to_csv(FILES[k], index=False)
 
 def ensure_tables():
-    """Ensure new module tables are loaded — called at top of Vendors/Items/Approvals pages."""
-    D = st.session_state.D
+    """Ensure new module tables are loaded into session state."""
+    D    = st.session_state.D
     seed = make_seed()
-    client = _get_supabase()
+    db   = _get_mongo()
     changed = False
     for k in ["vendors","vendor_payments","items","approvals"]:
         if k not in D:
-            if client and st.session_state.get("_db_mode") == "supabase":
-                result = _sb_load(client, k, seed[k])
+            if db is not None and st.session_state.get("_db_mode") == "mongodb":
+                result = _mg_load(db, k, seed[k])
                 D[k] = result if result is not None else seed[k].copy()
             else:
                 path = FILES[k]
@@ -560,8 +574,8 @@ def topbar(title, sub=""):
         st.markdown(f'<div style="padding:14px 0 12px;"><div style="font-size:18px;font-weight:800;color:#0f172a;">{title}</div>{sub_h}</div>',unsafe_allow_html=True)
     with cr:
         db_mode = st.session_state.get("_db_mode","csv")
-        db_badge = ('<div style="display:flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#15803d;">🟢 Supabase Live</div>'
-                    if db_mode=="supabase" else
+        db_badge = ('<div style="display:flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#15803d;">🟢 MongoDB Live</div>'
+                    if db_mode=="mongodb" else
                     '<div style="display:flex;align-items:center;gap:4px;background:#fef9c3;border:1px solid #fde047;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#92400e;">💾 Local CSV</div>')
         ist = datetime.now(timezone(timedelta(hours=5,minutes=30))).strftime("%d %b %Y, %I:%M %p")
         st.markdown(f'<div style="padding:14px 24px 12px;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:10px;"><div style="display:flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:#15803d;">● Auto-saved</div><div style="font-size:11px;color:#64748b;font-weight:500;">🕐 {ist} IST</div></div>',unsafe_allow_html=True)
