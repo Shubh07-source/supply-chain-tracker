@@ -15,22 +15,29 @@ def _get_mongo():
     try:
         from pymongo import MongoClient
         from urllib.parse import quote_plus
-        uri = st.secrets["mongodb"]["uri"]
-        db_name = st.secrets["mongodb"].get("db_name", "supply_chain")
-        # If user stored credentials separately, encode them
-        if "username" in st.secrets["mongodb"] and "password" in st.secrets["mongodb"]:
-            username = quote_plus(st.secrets["mongodb"]["username"])
-            password = quote_plus(st.secrets["mongodb"]["password"])
-            host = st.secrets["mongodb"]["host"]
-            uri = f"mongodb+srv://{username}:{password}@{host}/?appName=Cluster0"
-        client = MongoClient(uri, serverSelectionTimeoutMS=8000,
-                             connectTimeoutMS=8000, socketTimeoutMS=8000)
+        secrets = st.secrets.get("mongodb", {})
+        if not secrets:
+            return None
+        # Support both separate fields and full URI
+        if "username" in secrets and "password" in secrets and "host" in secrets:
+            username = quote_plus(str(secrets["username"]))
+            password = quote_plus(str(secrets["password"]))
+            host     = str(secrets["host"])
+            uri = f"mongodb+srv://{username}:{password}@{host}/?retryWrites=true&w=majority"
+        elif "uri" in secrets:
+            uri = str(secrets["uri"])
+        else:
+            return None
+        db_name = str(secrets.get("db_name", "supply_chain"))
+        client = MongoClient(uri, serverSelectionTimeoutMS=10000,
+                             connectTimeoutMS=10000, socketTimeoutMS=10000,
+                             tls=True)
         client.admin.command('ping')
         return client[db_name]
     except KeyError:
         return None
     except Exception as e:
-        st.error(f"❌ MongoDB connection failed: {e}")
+        st.session_state["_mongo_error"] = str(e)
         return None
 
 def _mg_load(db, table_name, seed_df):
@@ -877,6 +884,9 @@ def _log_row(log):
 # ─── DASHBOARD ────────────────────────────────────────────────────────────────
 def page_dashboard():
     ensure_tables()
+    # Show MongoDB connection error if any
+    if st.session_state.get("_mongo_error"):
+        st.error(f"❌ MongoDB: {st.session_state['_mongo_error']}")
     try:
         import plotly.graph_objects as go
         HAS_PLOTLY=True
