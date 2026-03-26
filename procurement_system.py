@@ -884,9 +884,12 @@ def _log_row(log):
 # ─── DASHBOARD ────────────────────────────────────────────────────────────────
 def page_dashboard():
     ensure_tables()
-    # Show MongoDB connection error if any
-    if st.session_state.get("_mongo_error"):
-        st.error(f"❌ MongoDB: {st.session_state['_mongo_error']}")
+    # DEBUG — remove after fixing
+    db_mode = st.session_state.get("_db_mode","csv")
+    mongo_err = st.session_state.get("_mongo_error","none")
+    has_secrets = "mongodb" in st.secrets
+    secret_keys = list(st.secrets.get("mongodb",{}).keys()) if has_secrets else []
+    st.info(f"🔍 DB Mode: **{db_mode}** | MongoDB secrets found: **{has_secrets}** | Keys: **{secret_keys}** | Error: **{mongo_err}**")
     try:
         import plotly.graph_objects as go
         HAS_PLOTLY=True
