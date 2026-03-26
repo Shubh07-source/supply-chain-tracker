@@ -11,15 +11,21 @@ ALL_TABLES = ["orders","procurement","dispatch","delivery","invoices","activity_
               "vendors","vendor_payments","items","approvals"]
 
 def _get_mongo():
-    """Returns (database, db_name) or None if not configured."""
+    """Returns MongoDB database or None if not configured."""
     try:
         from pymongo import MongoClient
         uri = st.secrets["mongodb"]["uri"]
         db_name = st.secrets["mongodb"].get("db_name", "supply_chain")
-        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
-        client.server_info()  # test connection
-        return client[db_name]
-    except Exception:
+        client = MongoClient(uri, serverSelectionTimeoutMS=8000,
+                             connectTimeoutMS=8000, socketTimeoutMS=8000)
+        # Force connection test
+        client.admin.command('ping')
+        db = client[db_name]
+        return db
+    except KeyError:
+        return None  # secrets not set — silent CSV fallback
+    except Exception as e:
+        st.error(f"❌ MongoDB connection failed: {e}")
         return None
 
 def _mg_load(db, table_name, seed_df):
