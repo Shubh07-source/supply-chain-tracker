@@ -14,16 +14,21 @@ def _get_mongo():
     """Returns MongoDB database or None if not configured."""
     try:
         from pymongo import MongoClient
+        from urllib.parse import quote_plus
         uri = st.secrets["mongodb"]["uri"]
         db_name = st.secrets["mongodb"].get("db_name", "supply_chain")
+        # If user stored credentials separately, encode them
+        if "username" in st.secrets["mongodb"] and "password" in st.secrets["mongodb"]:
+            username = quote_plus(st.secrets["mongodb"]["username"])
+            password = quote_plus(st.secrets["mongodb"]["password"])
+            host = st.secrets["mongodb"]["host"]
+            uri = f"mongodb+srv://{username}:{password}@{host}/?appName=Cluster0"
         client = MongoClient(uri, serverSelectionTimeoutMS=8000,
                              connectTimeoutMS=8000, socketTimeoutMS=8000)
-        # Force connection test
         client.admin.command('ping')
-        db = client[db_name]
-        return db
+        return client[db_name]
     except KeyError:
-        return None  # secrets not set — silent CSV fallback
+        return None
     except Exception as e:
         st.error(f"❌ MongoDB connection failed: {e}")
         return None
