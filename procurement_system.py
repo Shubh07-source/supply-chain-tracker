@@ -592,6 +592,12 @@ def topbar(title, sub=""):
         st.markdown(f'<div style="padding:14px 0 12px;"><div style="font-size:18px;font-weight:800;color:#0f172a;">{title}</div>{sub_h}</div>',unsafe_allow_html=True)
     with cr:
         db_mode = st.session_state.get("_db_mode","csv")
+        # Also check directly so badge shows correctly even on first load
+        if db_mode == "csv":
+            try:
+                if "mongodb" in st.secrets and st.secrets["mongodb"].get("host") or st.secrets["mongodb"].get("uri"):
+                    db_mode = "mongodb"
+            except: pass
         db_badge = ('<div style="display:flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#15803d;">🟢 MongoDB Live</div>'
                     if db_mode=="mongodb" else
                     '<div style="display:flex;align-items:center;gap:4px;background:#fef9c3;border:1px solid #fde047;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#92400e;">💾 Local CSV</div>')
@@ -884,12 +890,6 @@ def _log_row(log):
 # ─── DASHBOARD ────────────────────────────────────────────────────────────────
 def page_dashboard():
     ensure_tables()
-    # DEBUG — remove after fixing
-    db_mode = st.session_state.get("_db_mode","csv")
-    mongo_err = st.session_state.get("_mongo_error","none")
-    has_secrets = "mongodb" in st.secrets
-    secret_keys = list(st.secrets.get("mongodb",{}).keys()) if has_secrets else []
-    st.info(f"🔍 DB Mode: **{db_mode}** | MongoDB secrets found: **{has_secrets}** | Keys: **{secret_keys}** | Error: **{mongo_err}**")
     try:
         import plotly.graph_objects as go
         HAS_PLOTLY=True
