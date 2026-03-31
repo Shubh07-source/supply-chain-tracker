@@ -551,12 +551,6 @@ def dark(txt,size=13,weight=400): return f'<span style="color:#1e293b !important
 def section_label(t): st.markdown(f'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:8px;margin:14px 0 12px;">{t}</div>',unsafe_allow_html=True)
 def footer(): st.markdown(f'<div style="text-align:center;font-size:11px;color:#94a3b8;padding:18px 0 12px;border-top:1px solid #e2e8f0;margin-top:32px;">© {datetime.now().year} Robokart · Supply Chain Tracking</div>',unsafe_allow_html=True)
 
-def is_viewer(): return st.session_state.get("role","") == "Viewer"
-
-def viewer_block():
-    st.warning("⛔ **View Only** — Your role does not have permission to perform this action. Contact Admin.")
-    st.stop()
-
 # ── Plotly base font (kept as alias; canonical is _BLK defined below) ──────────
 PF_CHART = dict(family="DM Sans, sans-serif", color="#111827", size=12)
 
@@ -1032,7 +1026,6 @@ def page_dashboard():
 # ─── NEW ORDER ────────────────────────────────────────────────────────────────
 def page_new_order():
     topbar("➕ New Order","Create a new government purchase order")
-    if is_viewer(): viewer_block()
     D=st.session_state.D
     st.markdown('<div style="padding:0 24px;">',unsafe_allow_html=True)
     with st.form("no_form",clear_on_submit=True):
@@ -1607,9 +1600,8 @@ def page_vendors():
                   <div><div style="font-size:11px;color:#22c55e;font-weight:700;">₹{t_paid:,.0f} paid</div><div style="font-size:11px;color:#ef4444;font-weight:700;">₹{t_out:,.0f} due</div></div>
                 </div>""", unsafe_allow_html=True)
             with btn_col:
-                if not is_viewer():
-                 sp(4); b1,b2=st.columns(2)
-                 with b1:
+                sp(4); b1,b2=st.columns(2)
+                with b1:
                     if st.button("✏️",key=f"vnd_edit_{vid}",help=f"Edit {vid}",
                                  type="primary" if is_editing else "secondary",use_container_width=True):
                         st.session_state.vnd_edit_id=None if is_editing else vid
@@ -1641,7 +1633,6 @@ def page_vendors():
                 st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;"><div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:8px;">💰 Payment Summary</div><div style="display:grid;grid-template-columns:1fr;gap:8px;"><div style="background:#fff5f5;border-radius:7px;padding:10px 12px;"><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">Total Business</div><div style="font-size:22px;font-weight:800;color:#4f46e5;">₹{total_biz:,.0f}</div></div><div style="background:#f0fdf4;border-radius:7px;padding:10px 12px;"><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">Amount Paid</div><div style="font-size:22px;font-weight:800;color:#22c55e;">₹{total_paid:,.0f}</div></div><div style="background:#fef9c3;border-radius:7px;padding:10px 12px;"><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">Outstanding</div><div style="font-size:22px;font-weight:800;color:#ca8a04;">₹{total_out:,.0f}</div></div></div></div>',unsafe_allow_html=True)
 
     with t2:
-        if is_viewer(): viewer_block()
         with st.form("reg_vendor_form",clear_on_submit=True):
             section_label("Basic Information")
             c1,c2=st.columns(2)
@@ -1715,10 +1706,7 @@ def page_vendors():
         # ── UPDATE PAYMENT STATUS ──────────────────────────────────────────────
         st.markdown('<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:16px;">',unsafe_allow_html=True)
         section_label("✏️ Update Existing Payment Status")
-        if is_viewer():
-            st.info("🔒 View only — payment updates require Manager or Admin.")
-        else:
-         pay_opts=["— Select payment to update —"]+[
+        pay_opts=["— Select payment to update —"]+[
             f"{r['payment_id']} — {D['vendors'][D['vendors']['vendor_id']==r['vendor_id']]['name'].values[0][:18] if len(D['vendors'][D['vendors']['vendor_id']==r['vendor_id']])>0 else r['vendor_id']} — [{r['payment_status']}] — ₹{float(r['outstanding']):,.0f} due"
             for _,r in D["vendor_payments"].iterrows()
         ]
@@ -1807,8 +1795,7 @@ def page_vendors():
         sp(16)
 
         # ── RECORD NEW PAYMENT ─────────────────────────────────────────────────
-        if not is_viewer():
-         with st.form("add_payment_form",clear_on_submit=True):
+        with st.form("add_payment_form",clear_on_submit=True):
             section_label("➕ Record New Payment Request")
             c1,c2=st.columns(2)
             with c1:
@@ -1858,7 +1845,6 @@ def page_items():
         total_val=idf.apply(lambda x:float(x["unit_price"])*float(x["stock_qty"]) if str(x["unit_price"]).replace(".","").isdigit() and str(x["stock_qty"]).isdigit() else 0,axis=1).sum()
         st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);"><div style="padding:12px 18px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14px;font-weight:700;color:#0f172a;">📦 Item Catalogue</div><div style="display:flex;gap:8px;"><span style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:3px 12px;border-radius:20px;">{len(idf)} items</span><span style="font-size:11px;font-weight:700;color:#22c55e;background:#f0fdf4;padding:3px 12px;border-radius:20px;">Stock Value: ₹{total_val/100000:.1f}L</span></div></div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="{TH}">ID</th><th style="{TH}">Item Name</th><th style="{TH}">Category</th><th style="{TH}">Unit Price</th><th style="{TH}">Unit</th><th style="{TH}">Stock</th><th style="{TH}">Vendor</th><th style="{TH}">Status</th></tr></thead><tbody>{tbody}</tbody></table></div></div>',unsafe_allow_html=True)
     with t2:
-        if is_viewer(): viewer_block()
         with st.form("add_item_form",clear_on_submit=True):
             section_label("Item Information")
             c1,c2=st.columns(2)
