@@ -1608,16 +1608,16 @@ def page_vendors():
                 </div>""", unsafe_allow_html=True)
             with btn_col:
                 if not is_viewer():
-                 sp(4); b1,b2=st.columns(2)
-                 with b1:
-                    if st.button("✏️",key=f"vnd_edit_{vid}",help=f"Edit {vid}",
-                                 type="primary" if is_editing else "secondary",use_container_width=True):
-                        st.session_state.vnd_edit_id=None if is_editing else vid
-                        st.session_state.vnd_del_id=None; st.rerun()
-                with b2:
-                    if st.button("🗑️",key=f"vnd_del_{vid}",help=f"Delete {vid}",use_container_width=True):
-                        st.session_state.vnd_del_id=vid
-                        st.session_state.vnd_edit_id=None; st.rerun()
+                    sp(4); b1,b2=st.columns(2)
+                    with b1:
+                        if st.button("✏️",key=f"vnd_edit_{vid}",help=f"Edit {vid}",
+                                     type="primary" if is_editing else "secondary",use_container_width=True):
+                            st.session_state.vnd_edit_id=None if is_editing else vid
+                            st.session_state.vnd_del_id=None; st.rerun()
+                    with b2:
+                        if st.button("🗑️",key=f"vnd_del_{vid}",help=f"Delete {vid}",use_container_width=True):
+                            st.session_state.vnd_del_id=vid
+                            st.session_state.vnd_edit_id=None; st.rerun()
             sp(3)
         st.markdown('<p style="font-size:11.5px;color:#94a3b8;margin-top:8px;">💡 Click ✏️ to edit · 🗑️ to delete a vendor</p>',unsafe_allow_html=True)
         sp(16)
